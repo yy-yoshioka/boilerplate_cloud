@@ -1,26 +1,13 @@
-// jest.config.mjs
-export default {
-    transform: {
-        '^.+\\.(t|j)sx?$': ['ts-jest', { useESM: true }],
-    },
-    projects: [
-        {
-            displayName: 'web',
-            testMatch: [
-                '<rootDir>/apps/web/**/__tests__/**/*.(test|spec).[jt]s?(x)',
-                '<rootDir>/apps/web/**/?(*.)+(test|spec).[jt]s?(x)',
-            ],
-            moduleNameMapper: {
-                '^@/(.*)$': '<rootDir>/apps/web/$1',
-                '^@packages/(.*)$': '<rootDir>/packages/$1',
-            },
-            setupFilesAfterEnv: ['@testing-library/jest-dom/extend-expect'],
-            testEnvironment: 'jsdom',
-        },
-        {
-            displayName: 'api',
-            testMatch: ['<rootDir>/apps/api/**/tests/**/*.(test|spec).[jt]s'],
-            testEnvironment: 'node',
-        },
-    ],
-}
+// jest.config.mjs  ※最小抜粋
+const jestConfig = {
+  transform: { '^.+\\.(t|j)sx?$': ['@swc/jest'] },
+  testMatch: ['<rootDir>/**/__tests__/**/*.(test|spec).[jt]s?(x)'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/app/web/$1',
+    '^@packages/(.*)$': '<rootDir>/packages/$1',
+  },
+  setupFilesAfterEnv: ['@testing-library/jest-dom'],
+  testEnvironment: 'jsdom',
+};
+
+export default jestConfig;
