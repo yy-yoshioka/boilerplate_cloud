@@ -1,3 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
 
-yarn format && yarn lint && yarn jest && yarn build
-
+yarn lint --fix
+yarn tsc -b -p tsconfig.base.json --pretty
+# 変更ファイルのみテスト
+FILES=$(git diff --cached --name-only --relative | grep -E '\.(tsx?|jsx?)$')
+[ -n "$FILES" ] && yarn jest --findRelatedTests $FILES || echo "no tests to run"
