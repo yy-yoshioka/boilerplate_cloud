@@ -1,0 +1,25 @@
+services:
+  web:
+    build: ./apps/web
+    command: yarn workspace web dev
+    volumes:
+      - ./apps/web:/app/apps/web
+    ports: ['3000:3000']
+    env_file: .env
+
+  api:
+    build: ./apps/api
+    command: yarn workspace api dev
+    volumes:
+      - ./apps/api:/app/apps/api
+    environment:
+      DATABASE_URL: mysql://root:root@db:3306/boilerplate
+    ports: ['8080:8080']
+    depends_on: [db]
+
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: boilerplate
+    ports: ['3306:3306']
