@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Boilerplate Cloud
 
-## Getting Started
+エンタープライズ対応のSaaS構築プラットフォーム
 
-First, run the development server:
+## 🚀 特徴
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **認証・認可**: NextAuth.js + 多要素認証対応
+- **RBAC**: 柔軟な権限管理システム
+- **課金**: Stripe統合
+- **AIコード生成**: Live Coding Copilot
+- **モノレポ**: Turborepo + Yarn Workspaces
+
+## 📋 必要条件
+
+- Node.js >= 20.0.0
+- Yarn >= 1.22.0
+- Docker & Docker Compose
+- PostgreSQL (Dockerで提供)
+- Redis (Dockerで提供)
+
+## 🛠️ セットアップ
+
+1. **リポジトリのクローン**
+
+   ```bash
+   git clone https://github.com/your-org/boilerplate-cloud.git
+   cd boilerplate-cloud
+   ```
+
+2. **依存関係のインストール**
+
+   ```bash
+   yarn install
+   ```
+
+3. **環境変数の設定**
+
+   ```bash
+   cp .env.example .env
+   # .envファイルを編集して必要な値を設定
+   ```
+
+4. **データベースの起動**
+
+   ```bash
+   yarn docker:dev
+   ```
+
+5. **開発サーバーの起動**
+   ```bash
+   yarn dev
+   ```
+
+## 📁 プロジェクト構造
+
+```
+boilerplate-cloud/
+├── apps/
+│   └── web/              # Next.js メインアプリケーション
+├── packages/             # 共有パッケージ
+├── docker-compose.yml    # Docker設定
+├── turbo.json           # Turborepo設定
+└── package.json         # ルートパッケージ
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔧 利用可能なコマンド
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# 開発
+yarn dev              # 開発サーバー起動
+yarn build            # プロダクションビルド
+yarn start            # プロダクションサーバー起動
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# テスト・品質
+yarn test             # テスト実行
+yarn lint             # リント実行
+yarn type-check       # 型チェック
+yarn format           # コードフォーマット
 
-## Learn More
+# Docker
+yarn docker:dev       # Docker環境起動
+yarn docker:down      # Docker環境停止
+yarn docker:logs      # ログ表示
 
-To learn more about Next.js, take a look at the following resources:
+# その他
+yarn clean            # キャッシュクリア
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔀 Git ワークフロー
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. `main` - プロダクション環境
+2. `develop` - 開発環境
+3. `feature/*` - 機能開発
+4. `hotfix/*` - 緊急修正
 
-## Deploy on Vercel
+## 🤝 コントリビューション
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Issueを作成
+2. フィーチャーブランチを作成
+3. コミット（Conventional Commitsに従う）
+4. プルリクエストを作成
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📄 ライセンス
+
+MIT License

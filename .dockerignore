@@ -1,9 +1,44 @@
-node_modules
-.next
+# Git
 .git
 .gitignore
-.eslintrc*
-.eslint*
-*.log
-Dockerfile*
+
+# CI
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Docker
 docker-compose*.yml
+Dockerfile*
+
+# Development
+.vscode
+.idea
+
+# Logs
+*.log
+
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Next.js
+.next
+out
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Turbo
+.turbo

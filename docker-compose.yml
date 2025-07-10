@@ -3,7 +3,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: app/apps/web/Dockerfile
+      dockerfile: apps/web/Dockerfile
     image: boilerplate-web:latest
     env_file: .env
     ports:

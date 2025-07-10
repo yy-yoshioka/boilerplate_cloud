@@ -1,21 +1,4 @@
 #!/usr/bin/env sh
-# Husky pre-commit hook
+. "$(dirname -- "$0")/_/husky.sh"
 
-set -e
-
-echo "🔍  formatting with Prettier"
-yarn prettier --write .
-
-echo "🔍  linting with ESLint"
-yarn lint --fix
-
-echo "🔍  type-checking"
-# Use build mode; -p is invalid together with -b
-yarn tsc -b tsconfig.base.json --pretty
-
-echo "🔍  running related tests"
-
-yarn test
-
-# Re-stage any auto-fixed files
-git add -u
+npx lint-staged
