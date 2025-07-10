@@ -3,7 +3,7 @@ const jestConfig = {
   transform: { '^.+\\.(t|j)sx?$': ['@swc/jest'] },
   testMatch: ['<rootDir>/**/__tests__/**/*.(test|spec).[jt]s?(x)'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/app/web/$1',
+    '^@/(.*)$': '<rootDir>/apps/web/$1',
     '^@packages/(.*)$': '<rootDir>/packages/$1',
   },
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
