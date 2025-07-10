@@ -1,4 +1,15 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+echo "🔍 Running pre-commit checks..."
+
+# lint-stagedを実行（変更されたファイルのみチェック）
 npx lint-staged
+
+# lint-stagedが失敗した場合
+if [ $? -ne 0 ]; then
+  echo "❌ Lint-staged failed. Please fix the issues before committing."
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"
