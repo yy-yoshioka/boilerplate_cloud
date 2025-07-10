@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 echo "🧪  full unit test"
-yarn test
+yarn jest
 
 echo "🛠️  production build"
 yarn build
