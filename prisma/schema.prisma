@@ -1,0 +1,449 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum PlatformRole {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum PlatformPlan {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum ProjectStatus {
+  CREATING
+  ACTIVE
+  FAILED
+  SUSPENDED
+  ARCHIVED
+}
+
+enum EnvironmentStatus {
+  PENDING
+  ACTIVE
+  FAILED
+  DELETED
+}
+
+enum BuildStatus {
+  PENDING
+  BUILDING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum DeployStatus {
+  PENDING
+  DEPLOYING
+  SUCCESS
+  FAILED
+  ROLLED_BACK
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}
+
+enum CustomizationStatus {
+  PENDING
+  APPLIED
+  FAILED
+  REVERTED
+}
+
+model Account {
+  id             String               @id @default(cuid())
+  email          String               @unique
+  name           String?
+  avatarUrl      String?
+  passwordEnc    String?
+  status         AccountStatus        @default(ACTIVE)
+  role           PlatformRole         @default(USER)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  lastLoginAt    DateTime?
+  authAccounts   AuthAccount[]
+  sessions       Session[]
+  organizations  OrganizationMember[]
+  projects       Project[]
+  auditLogs      AuditLog[]
+  apiKeys        ApiKey[]
+  customizations Customization[]      @relation("Creator")
+}
+
+model AuthAccount {
+  id                String    @id @default(cuid())
+  accountId         String
+  provider          String
+  providerAccountId String
+  refreshTokenEnc   String?
+  accessTokenEnc    String?
+  expiresAt         DateTime?
+  account           Account   @relation(fields: [accountId], references: [id])
+
+  @@unique([provider, providerAccountId])
+  @@index([accountId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  accountId String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  account   Account  @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
+}
+
+model Organization {
+  id               String               @id @default(cuid())
+  name             String
+  slug             String               @unique
+  description      String?
+  plan             PlatformPlan         @default(FREE)
+  planExpiresAt    DateTime?
+  stripeCustomerId String?              @unique
+  projectLimit     Int                  @default(3)
+  memberLimit      Int                  @default(5)
+  aiTokenLimit     Int                  @default(1000)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  members          OrganizationMember[]
+  projects         Project[]
+  subscriptions    Subscription[]
+  invoices         Invoice[]
+  usages           Usage[]
+}
+
+model OrganizationMember {
+  organizationId String
+  accountId      String
+  role           OrganizationRole @default(MEMBER)
+  invitedBy      String?
+  invitedAt      DateTime?
+  acceptedAt     DateTime?
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  account        Account          @relation(fields: [accountId], references: [id])
+
+  @@id([organizationId, accountId])
+  @@index([accountId])
+}
+
+model Project {
+  id                   String          @id @default(cuid())
+  name                 String
+  slug                 String          @unique
+  description          String?
+  templateId           String
+  templateConfig       Json
+  status               ProjectStatus   @default(CREATING)
+  githubRepoUrl        String?
+  githubRepoId         String?
+  githubInstallationId String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  lastDeployedAt       DateTime?
+  deletedAt            DateTime?
+  accountId            String?
+  organizationId       String?
+  owner                Account?        @relation(fields: [accountId], references: [id])
+  organization         Organization?   @relation(fields: [organizationId], references: [id])
+  environments         Environment[]
+  builds               Build[]
+  deployments          Deployment[]
+  apiKeys              ApiKey[]
+  secrets              Secret[]
+  featureFlags         FeatureFlag[]
+  tokenUsages          TokenUsage[]
+  auditLogs            AuditLog[]
+  customizations       Customization[]
+  subscriptions        Subscription[]
+  Template             Template        @relation(fields: [templateId], references: [id])
+  Usage                Usage[]
+
+  @@index([organizationId, deletedAt])
+}
+
+model Environment {
+  id                String                @id @default(cuid())
+  projectId         String
+  name              String
+  provider          String
+  providerProjectId String?
+  url               String?
+  status            EnvironmentStatus     @default(PENDING)
+  project           Project               @relation(fields: [projectId], references: [id])
+  variables         EnvironmentVariable[]
+  deployments       Deployment[]
+
+  @@unique([projectId, name])
+}
+
+model EnvironmentVariable {
+  id            String      @id @default(cuid())
+  environmentId String
+  key           String
+  value         String?
+  valueEnc      String?
+  isSecret      Boolean     @default(false)
+  source        String?
+  environment   Environment @relation(fields: [environmentId], references: [id])
+
+  @@unique([environmentId, key])
+}
+
+model Build {
+  id          String       @id @default(cuid())
+  projectId   String
+  version     String
+  gitSha      String
+  template    String
+  config      Json
+  status      BuildStatus
+  startedAt   DateTime?
+  completedAt DateTime?
+  artifactUrl String?
+  buildLog    String?      @db.Text
+  createdAt   DateTime     @default(now())
+  triggeredBy String
+  project     Project      @relation(fields: [projectId], references: [id])
+  deployments Deployment[]
+
+  @@index([projectId, status, createdAt])
+}
+
+model Deployment {
+  id               String       @id @default(cuid())
+  projectId        String
+  buildId          String
+  environmentId    String
+  provider         String
+  providerDeployId String?
+  status           DeployStatus
+  url              String?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  metadata         Json
+  createdAt        DateTime     @default(now())
+  project          Project      @relation(fields: [projectId], references: [id])
+  build            Build        @relation(fields: [buildId], references: [id])
+  environment      Environment  @relation(fields: [environmentId], references: [id])
+
+  @@index([projectId, environmentId, status])
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  projectId   String
+  name        String
+  hashedKey   String    @unique
+  prefix      String
+  permissions Json
+  revoked     Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  project     Project   @relation(fields: [projectId], references: [id])
+  Account     Account?  @relation(fields: [accountId], references: [id])
+  accountId   String?
+
+  @@index([projectId])
+}
+
+model Secret {
+  id        String   @id @default(cuid())
+  projectId String
+  key       String
+  valueEnc  String
+  provider  String
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, key, provider])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  accountId      String
+  organizationId String?
+  projectId      String?
+  action         String
+  resource       String
+  resourceId     String
+  metadata       Json?
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+  account        Account  @relation(fields: [accountId], references: [id])
+  Project        Project? @relation(fields: [projectId], references: [id])
+
+  @@index([projectId, createdAt])
+}
+
+model Subscription {
+  id                String             @id @default(cuid())
+  organizationId    String?
+  projectId         String?
+  stripePriceId     String
+  stripeSubId       String             @unique
+  status            SubscriptionStatus
+  currentPeriodEnd  DateTime
+  cancelAtPeriodEnd Boolean            @default(false)
+  seatCount         Int?
+  usageLimit        Int?
+  organization      Organization?      @relation(fields: [organizationId], references: [id])
+  project           Project?           @relation(fields: [projectId], references: [id])
+  invoices          Invoice[]
+
+  @@index([organizationId])
+  @@index([projectId])
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  subscriptionId String
+  stripeInvId    String        @unique
+  amountDue      Int
+  paid           Boolean
+  issuedAt       DateTime
+  lineItems      Json
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
+  Organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+}
+
+model TokenUsage {
+  id               String   @id @default(cuid())
+  projectId        String
+  feature          String
+  provider         String
+  model            String
+  promptTokens     Int
+  completionTokens Int
+  totalTokens      Int
+  costUsd          Decimal  @db.Decimal(10, 4)
+  success          Boolean
+  requestId        String?
+  createdAt        DateTime @default(now())
+  project          Project  @relation(fields: [projectId], references: [id])
+
+  @@index([projectId, feature, provider, createdAt])
+}
+
+model Customization {
+  id            String              @id @default(cuid())
+  projectId     String
+  type          String
+  description   String
+  prompt        String?             @db.Text
+  generatedCode String?             @db.Text
+  provider      String?
+  model         String?
+  tokens        Int?
+  status        CustomizationStatus
+  appliedAt     DateTime?
+  revertedAt    DateTime?
+  createdAt     DateTime            @default(now())
+  createdBy     String
+  project       Project             @relation(fields: [projectId], references: [id])
+  creator       Account             @relation("Creator", fields: [createdBy], references: [id])
+
+  @@index([projectId, createdAt])
+}
+
+model FeatureFlag {
+  id        String  @id @default(cuid())
+  projectId String
+  key       String
+  enabled   Boolean @default(false)
+  value     Json?
+  project   Project @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, key])
+}
+
+model Template {
+  id              String    @id @default(cuid())
+  key             String    @unique
+  name            String
+  category        String
+  version         String
+  description     String?
+  features        Json
+  configSchema    Json
+  defaultConfig   Json
+  requiredEnvVars Json
+  dependencies    Json
+  previewUrl      String?
+  thumbnailUrl    String?
+  deprecated      Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  projects        Project[]
+}
+
+model WebhookEvent {
+  id          String    @id @default(cuid())
+  provider    String
+  eventId     String
+  eventType   String
+  payload     Json
+  processed   Boolean   @default(false)
+  processedAt DateTime?
+  error       String?
+  createdAt   DateTime  @default(now())
+
+  @@unique([provider, eventId])
+  @@index([processed, createdAt])
+}
+
+model Usage {
+  id             String       @id @default(cuid())
+  organizationId String
+  projectId      String
+  feature        String
+  amount         Int
+  unit           String
+  recordedAt     DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  project        Project      @relation(fields: [projectId], references: [id])
+
+  @@index([organizationId, recordedAt])
+}

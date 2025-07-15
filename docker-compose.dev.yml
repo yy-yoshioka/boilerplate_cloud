@@ -1,25 +1,36 @@
+version: '3.9'
+
 services:
   web:
-    build: ./apps/web
-    command: yarn workspace web dev
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: dev
     volumes:
-      - ./apps/web:/app/apps/web
-    ports: ['3000:3000']
-    env_file: .env
-
-  api:
-    build: ./apps/api
-    command: yarn workspace api dev
-    volumes:
-      - ./apps/api:/app/apps/api
+      - .:/app
+      - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/apps/web/.next
+    env_file:
+      - .env
+    ports:
+      - '3002:3000'
+    depends_on:
+      - db
     environment:
-      DATABASE_URL: mysql://root:root@db:3306/boilerplate
-    ports: ['8080:8080']
-    depends_on: [db]
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/boilerplate
 
   db:
-    image: mysql:8
+    image: postgres:16
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: boilerplate
-    ports: ['3306:3306']
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: boilerplate
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
