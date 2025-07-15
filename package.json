@@ -47,5 +47,9 @@
     "node": ">=20.0.0",
     "yarn": ">=1.22.0"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "dependencies": {
+    "@prisma/client": "^6.11.1",
+    "prisma": "^6.11.1"
+  }
 }
