@@ -1,0 +1,21 @@
+{
+  "name": "@boilerplate/zod-schemas",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./generated/schemas/index.js",
+  "types": "./generated/schemas/index.d.ts",
+  "exports": {
+    ".": "./generated/schemas/index.js",
+    "./*": "./generated/*"
+  },
+  "scripts": {
+    "clean": "rm -rf generated"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.31",
+    "typescript": "^5.4.5"
+  }
+}
