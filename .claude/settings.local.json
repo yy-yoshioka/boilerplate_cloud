@@ -10,7 +10,12 @@
       "Bash(ls:*)",
       "Bash(yarn type-check)",
       "Bash(rm:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(cat:*)",
+      "Bash(yarn test:*)",
+      "Bash(npx turbo test:*)",
+      "Bash(yarn build:*)",
+      "Bash(npx turbo build:*)"
     ],
     "deny": []
   }

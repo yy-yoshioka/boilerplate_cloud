@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@zod-schemas/*": ["../zod-schemas/generated/*"],
+      "@zod-schemas/*": ["../zod-schemas/generated/schemas/*"],
       "@shared-types/*": ["./src/*"]
     }
   },

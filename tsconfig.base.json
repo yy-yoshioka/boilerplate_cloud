@@ -15,7 +15,7 @@
     "incremental": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@zod-schemas/*": ["./packages/zod-schemas/generated/*"],
+      "@zod-schemas/*": ["./packages/zod-schemas/generated/schemas/*"],
       "@shared-types/*": ["./packages/shared-types/src/*"]
     }
   }
