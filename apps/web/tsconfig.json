@@ -6,7 +6,9 @@
       "@/*": ["./app/*"],
       "@/components/*": ["./components/*"],
       "@/lib/*": ["./lib/*"],
-      "@/hooks/*": ["./hooks/*"]
+      "@/hooks/*": ["./hooks/*"],
+      "@zod-schemas/*": ["../../packages/zod-schemas/generated/schemas/*"],
+      "@shared-types/*": ["../../packages/shared-types/src/*"]
     },
     "plugins": [
       {

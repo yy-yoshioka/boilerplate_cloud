@@ -66,4 +66,5 @@ Thumbs.db
 !.yarn/sdks
 !.yarn/versions
 
-/generated/prisma
+/generated/
+/packages/zod-schemas/generated/

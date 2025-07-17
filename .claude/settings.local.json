@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(yarn prisma:*)",
+      "Bash(yarn install)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(yarn type-check)",
+      "Bash(rm:*)",
+      "Bash(true)",
+      "Bash(cat:*)",
+      "Bash(yarn test:*)",
+      "Bash(npx turbo test:*)",
+      "Bash(yarn build:*)",
+      "Bash(npx turbo build:*)",
+      "Bash(git push:*)",
+      "Bash(git push:*)"
+    ],
+    "deny": []
+  }
+}

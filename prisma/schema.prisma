@@ -6,7 +6,19 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+}
+
+generator zod {
+  provider                         = "prisma-zod-generator"
+  output                           = "../packages/zod-schemas/generated"
+  relationModel                    = true
+  modelCase                        = "PascalCase"
+  modelSuffix                      = "Schema"
+  createPartialTypes               = true
+  addInputTypeValidation           = false
+  createOptionalDefaultValuesTypes = true
+  createRelationValuesTypes        = true
+  prismaJsonNullability            = true
 }
 
 datasource db {
