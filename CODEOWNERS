@@ -1,0 +1,3 @@
+# protect shared types
+/packages/shared-types/** @core-leads
+/scripts/verify-scaffold.ts @core-leads
