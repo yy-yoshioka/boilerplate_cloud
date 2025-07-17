@@ -13,6 +13,10 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@zod-schemas/*": ["./packages/zod-schemas/generated/schemas/*"],
+      "@shared-types/*": ["./packages/shared-types/src/*"]
+    }
   }
 }
