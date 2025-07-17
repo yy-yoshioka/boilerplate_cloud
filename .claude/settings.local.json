@@ -17,7 +17,11 @@
       "Bash(yarn build:*)",
       "Bash(npx turbo build:*)",
       "Bash(git push:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(chmod:*)",
+      "Bash(tree:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }

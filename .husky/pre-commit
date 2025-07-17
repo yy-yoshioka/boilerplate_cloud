@@ -1,6 +1,21 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# ==== Write-protect shared errors ====
+# 初回作成時は除外
+if [ ! -f packages/shared-types/src/errors.ts ] || [ ! -f packages/shared-types/src/validation.ts ]; then
+  echo "📝 Initial creation of protected files detected, allowing..."
+else
+  CHANGED=$(git diff --cached --name-only -- packages/shared-types/src/errors.ts packages/shared-types/src/validation.ts)
+  if [ -n "$CHANGED" ]; then
+    echo "⛔ errors.ts / validation.ts は直接編集禁止。yarn gen:error を使って下さい。" >&2
+    exit 1
+  fi
+fi
+
+# ==== TODO検査 ====
+git diff --cached | grep -q "TODO:" && echo "❌ TODOが残っています" && exit 1
+
 echo "🔍 Running pre-commit checks..."
 
 # lint-stagedを実行（変更されたファイルのみチェック）
