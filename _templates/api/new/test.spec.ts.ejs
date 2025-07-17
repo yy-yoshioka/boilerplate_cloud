@@ -1,37 +1,184 @@
 ---
-to: apps/api/__tests__/<%= h.camel(model) %>.spec.ts
+to: apps/api/__tests__/<%= h.changeCase.camel(model) %>.spec.ts
 ---
 import { describe, expect, it, beforeEach } from 'vitest';
-import { <%= h.camel(model) %>Router } from '../lib/routers/<%= h.camel(model) %>.router';
+import { <%= h.changeCase.camel(model) %>Router } from '../lib/routers/<%= h.changeCase.camel(model) %>.router';
 import { createMockContext } from '../lib/test/helpers';
+import { TRPCError } from '@trpc/server';
 
 describe('<%= model %> Router', () => {
   let ctx: ReturnType<typeof createMockContext>;
+  let caller: ReturnType<typeof <%= h.changeCase.camel(model) %>Router.createCaller>;
 
   beforeEach(() => {
     ctx = createMockContext();
+    <% if (access !== 'public') { %>ctx.userId = 'test-user-id'; // Set authenticated user<% } %>
+    caller = <%= h.changeCase.camel(model) %>Router.createCaller(ctx);
   });
 
-  it('should list <%= h.camel(model) %>s', async () => {
-    ctx.db.<%= h.camel(model) %>.findMany.mockResolvedValue([]);
-    ctx.db.<%= h.camel(model) %>.count.mockResolvedValue(0);
+  describe('list', () => {
+    it('should list <%= h.changeCase.camel(model) %>s successfully', async () => {
+      const mockItems = [
+        { id: '1', name: 'Test 1', createdAt: new Date(), updatedAt: new Date() },
+        { id: '2', name: 'Test 2', createdAt: new Date(), updatedAt: new Date() }
+      ];
 
-    const caller = <%= h.camel(model) %>Router.createCaller(ctx);
-    const result = await caller.list({});
+      ctx.db.<%= h.changeCase.camel(model) %>.findMany.mockResolvedValue(mockItems);
+      ctx.db.<%= h.changeCase.camel(model) %>.count.mockResolvedValue(2);
 
-    expect(result.items).toEqual([]);
-    expect(result.pagination.total).toBe(0);
+      const result = await caller.list({});
+
+      expect(result.items).toHaveLength(2);
+      expect(result.pagination.total).toBe(2);
+      expect(result.pagination.totalPages).toBe(1);
+    });
+
+    it('should handle pagination correctly', async () => {
+      ctx.db.<%= h.changeCase.camel(model) %>.findMany.mockResolvedValue([]);
+      ctx.db.<%= h.changeCase.camel(model) %>.count.mockResolvedValue(0);
+
+      const result = await caller.list({ page: 2, limit: 10 });
+
+      expect(ctx.db.<%= h.changeCase.camel(model) %>.findMany).toHaveBeenCalledWith({
+        where: expect.objectContaining({}),
+        skip: 10,
+        take: 10,
+        orderBy: { createdAt: 'desc' }
+      });
+    });
+
+    <% if (access !== 'public') { %>
+    it('should reject unauthenticated requests', async () => {
+      ctx.userId = undefined;
+      const unauthenticatedCaller = <%= h.changeCase.camel(model) %>Router.createCaller(ctx);
+
+      await expect(unauthenticatedCaller.list({})).rejects.toThrow(TRPCError);
+    });
+    <% } %>
   });
 
-  it('should create <%= h.camel(model) %>', async () => {
-    const input = { name: 'Test' };
-    const created = { id: '1', ...input, createdAt: new Date(), updatedAt: new Date() };
-    
-    ctx.db.<%= h.camel(model) %>.create.mockResolvedValue(created);
+  describe('get', () => {
+    it('should get <%= h.changeCase.camel(model) %> by id', async () => {
+      const mockItem = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
+      ctx.db.<%= h.changeCase.camel(model) %>.findFirst.mockResolvedValue(mockItem);
 
-    const caller = <%= h.camel(model) %>Router.createCaller(ctx);
-    const result = await caller.create(input);
+      const result = await caller.get({ id: '1' });
 
-    expect(result).toEqual(created);
+      expect(result).toEqual(mockItem);
+    });
+
+    it('should throw NOT_FOUND for non-existent <%= h.changeCase.camel(model) %>', async () => {
+      ctx.db.<%= h.changeCase.camel(model) %>.findFirst.mockResolvedValue(null);
+
+      await expect(caller.get({ id: 'non-existent' })).rejects.toThrow(TRPCError);
+    });
+  });
+
+  describe('create', () => {
+    it('should create <%= h.changeCase.camel(model) %> successfully', async () => {
+      const input = { name: 'New Test' };
+      const created = { 
+        id: '1', 
+        ...input, 
+        createdAt: new Date(), 
+        updatedAt: new Date()<% if (withSoftDelete) { %>,
+        deletedAt: null<% } %>
+      };
+      
+      ctx.db.<%= h.changeCase.camel(model) %>.create.mockResolvedValue(created);
+
+      const result = await caller.create(input);
+
+      expect(result).toEqual(created);
+      expect(ctx.db.<%= h.changeCase.camel(model) %>.create).toHaveBeenCalledWith({ 
+        data: expect.objectContaining(input)
+      });
+    });
+
+    it('should validate input data', async () => {
+      const invalidInput = { name: '' }; // Empty name should fail validation
+
+      await expect(caller.create(invalidInput)).rejects.toThrow();
+    });
+  });
+
+  describe('update', () => {
+    it('should update <%= h.changeCase.camel(model) %> successfully', async () => {
+      const existing = { id: '1', name: 'Original', createdAt: new Date(), updatedAt: new Date() };
+      const updated = { ...existing, name: 'Updated' };
+      
+      ctx.db.<%= h.changeCase.camel(model) %>.findFirst.mockResolvedValue(existing);
+      ctx.db.<%= h.changeCase.camel(model) %>.update.mockResolvedValue(updated);
+
+      const result = await caller.update({ id: '1', data: { name: 'Updated' } });
+
+      expect(result).toEqual(updated);
+    });
+
+    it('should throw NOT_FOUND for non-existent <%= h.changeCase.camel(model) %>', async () => {
+      ctx.db.<%= h.changeCase.camel(model) %>.findFirst.mockResolvedValue(null);
+
+      await expect(caller.update({ id: 'non-existent', data: { name: 'Updated' } }))
+        .rejects.toThrow(TRPCError);
+    });
+  });
+
+  describe('delete', () => {
+    <% if (withSoftDelete) { %>
+    it('should soft delete <%= h.changeCase.camel(model) %> successfully', async () => {
+      const existing = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
+      const deleted = { ...existing, deletedAt: new Date() };
+      
+      ctx.db.<%= h.changeCase.camel(model) %>.findFirst.mockResolvedValue(existing);
+      ctx.db.<%= h.changeCase.camel(model) %>.update.mockResolvedValue(deleted);
+
+      const result = await caller.delete({ id: '1' });
+
+      expect(result).toEqual({ success: true, id: '1' });
+      expect(ctx.db.<%= h.changeCase.camel(model) %>.update).toHaveBeenCalledWith({
+        where: { id: '1' },
+        data: { deletedAt: expect.any(Date) }
+      });
+    });
+
+    it('should restore <%= h.changeCase.camel(model) %> successfully', async () => {
+      const restored = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date(), deletedAt: null };
+      
+      ctx.db.<%= h.changeCase.camel(model) %>.update.mockResolvedValue(restored);
+
+      const result = await caller.restore({ id: '1' });
+
+      expect(result).toEqual(restored);
+      expect(ctx.db.<%= h.changeCase.camel(model) %>.update).toHaveBeenCalledWith({
+        where: { id: '1' },
+        data: { deletedAt: null }
+      });
+    });
+    <% } else { %>
+    it('should hard delete <%= h.changeCase.camel(model) %> successfully', async () => {
+      const deleted = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
+      
+      ctx.db.<%= h.changeCase.camel(model) %>.delete.mockResolvedValue(deleted);
+
+      const result = await caller.delete({ id: '1' });
+
+      expect(result).toEqual({ success: true, id: '1' });
+      expect(ctx.db.<%= h.changeCase.camel(model) %>.delete).toHaveBeenCalledWith({
+        where: { id: '1' }
+      });
+    });
+    <% } %>
+  });
+
+  describe('error handling', () => {
+    it('should handle database errors gracefully', async () => {
+      ctx.db.<%= h.changeCase.camel(model) %>.findMany.mockRejectedValue(new Error('Database error'));
+
+      await expect(caller.list({})).rejects.toThrow(TRPCError);
+    });
+
+    it('should handle validation errors', async () => {
+      await expect(caller.get({ id: 'invalid-id' })).rejects.toThrow();
+    });
   });
 });

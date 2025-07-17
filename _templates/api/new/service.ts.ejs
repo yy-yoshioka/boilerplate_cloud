@@ -1,19 +1,36 @@
 ---
-to: apps/api/lib/services/<%= h.camel(model) %>.service.ts
+to: apps/api/lib/services/<%= h.changeCase.camel(model) %>.service.ts
 ---
 import type { Context } from '../types/context';
-import type * as S from '../schemas/<%= h.camel(model) %>';
+import type * as S from '../schemas/<%= h.changeCase.camel(model) %>';
 import { createStandardError } from '../utils/errors';
 
 export const create<%= model %>Service = (ctx: Context) => {
-  const { db, logger } = ctx;
-  const searchFields = '<%= searchableFields %>'.split(',').map(f => f.trim());
+  const { db, logger, userId } = ctx;
+  
+  // 型安全な検索フィールド定義
+  const searchFields = [<%= searchableFields.split(',').map(f => `'${f.trim()}'`).join(', ') %>] as const;
+
+  // 認証チェック
+  const ensureAuthenticated = () => {
+    if (!userId) {
+      throw createStandardError('UNAUTHORIZED');
+    }
+  };
 
   return {
     async list(input: S.<%= model %>ListInput) {
+      <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
+      
       const { page = 1, limit = 20, search } = input;
+      
+      // 入力値の検証
+      if (page < 1) throw createStandardError('VALIDATION_ERROR');
+      if (limit < 1 || limit > 100) throw createStandardError('VALIDATION_ERROR');
+      
       const where = {
 <% if (withSoftDelete) { %>        deletedAt: null,<% } %>
+        <% if (access !== 'public') { %>// TODO: Add user/organization filtering based on your data model<% } %>
         ...(search && {
           OR: searchFields.map(field => ({
             [field]: { contains: search, mode: 'insensitive' as const }
@@ -21,63 +38,157 @@ export const create<%= model %>Service = (ctx: Context) => {
         }),
       };
 
-      const [items, total] = await Promise.all([
-        db.<%= h.camel(model) %>.findMany({
-          where,
-          skip: (page - 1) * limit,
-          take: limit,
-          orderBy: { createdAt: 'desc' },
-        }),
-        db.<%= h.camel(model) %>.count({ where }),
-      ]);
+      try {
+        const [items, total] = await Promise.all([
+          db.<%= h.changeCase.camel(model) %>.findMany({
+            where,
+            skip: (page - 1) * limit,
+            take: limit,
+            orderBy: { createdAt: 'desc' },
+          }),
+          db.<%= h.changeCase.camel(model) %>.count({ where }),
+        ]);
 
-      return {
-        items,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
-      };
+        return {
+          items,
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+          },
+        };
+      } catch (error: any) {
+        logger.error({ model: '<%= model %>', action: 'list', error: error.message });
+        throw createStandardError('INTERNAL_ERROR');
+      }
     },
 
     async get(id: string) {
-      return db.<%= h.camel(model) %>.findFirst({
-        where: { id<% if (withSoftDelete) { %>, deletedAt: null<% } %> },
-      });
+      <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
+      
+      if (!id) throw createStandardError('VALIDATION_ERROR');
+      
+      try {
+        return await db.<%= h.changeCase.camel(model) %>.findFirst({
+          where: { id<% if (withSoftDelete) { %>, deletedAt: null<% } %> },
+        });
+      } catch (error: any) {
+        logger.error({ model: '<%= model %>', action: 'get', id, error: error.message });
+        throw createStandardError('INTERNAL_ERROR');
+      }
     },
 
     async create(data: S.<%= model %>CreateInput) {
-      logger.info({ model: '<%= model %>', action: 'create' });
-      return db.<%= h.camel(model) %>.create({ data });
+      <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
+      
+      logger.info({ model: '<%= model %>', action: 'create', userId });
+      
+      try {
+        return await db.<%= h.changeCase.camel(model) %>.create({ 
+          data: {
+            ...data,
+            <% if (access !== 'public') { %>// TODO: Add user/organization association<% } %>
+          } 
+        });
+      } catch (error: any) {
+        logger.error({ model: '<%= model %>', action: 'create', error: error.message });
+        
+        // P2002: Unique constraint failed
+        if (error?.code === 'P2002') {
+          throw createStandardError('CONFLICT');
+        }
+        throw createStandardError('INTERNAL_ERROR');
+      }
     },
 
     async update(id: string, data: S.<%= model %>UpdateData) {
+      <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
+      
+      if (!id) throw createStandardError('VALIDATION_ERROR');
+      
       const existing = await this.get(id);
       if (!existing) throw createStandardError('NOT_FOUND');
       
-      logger.info({ model: '<%= model %>', action: 'update', id });
-      return db.<%= h.camel(model) %>.update({
-        where: { id },
-        data,
-      });
+      logger.info({ model: '<%= model %>', action: 'update', id, userId });
+      
+      try {
+        // Prismaの@updatedAtに任せるため、updatedAtは渡さない
+        const { updatedAt, ...updateData } = data as any;
+        
+        return await db.<%= h.changeCase.camel(model) %>.update({
+          where: { id },
+          data: updateData,
+        });
+      } catch (error: any) {
+        logger.error({ model: '<%= model %>', action: 'update', id, error: error.message });
+        throw createStandardError('INTERNAL_ERROR');
+      }
     },
 <% if (withSoftDelete) { %>
+
     async softDelete(id: string) {
+      <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
+      
+      if (!id) throw createStandardError('VALIDATION_ERROR');
+      
       const existing = await this.get(id);
       if (!existing) throw createStandardError('NOT_FOUND');
       
-      logger.info({ model: '<%= model %>', action: 'softDelete', id });
-      return db.<%= h.camel(model) %>.update({
-        where: { id },
-        data: { deletedAt: new Date() },
-      });
+      logger.info({ model: '<%= model %>', action: 'softDelete', id, userId });
+      
+      try {
+        return await db.<%= h.changeCase.camel(model) %>.update({
+          where: { id },
+          data: { deletedAt: new Date() },
+        });
+      } catch (error: any) {
+        logger.error({ model: '<%= model %>', action: 'softDelete', id, error: error.message });
+        throw createStandardError('INTERNAL_ERROR');
+      }
+    },
+
+    async restore(id: string) {
+      <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
+      
+      if (!id) throw createStandardError('VALIDATION_ERROR');
+      
+      logger.info({ model: '<%= model %>', action: 'restore', id, userId });
+      
+      try {
+        return await db.<%= h.changeCase.camel(model) %>.update({
+          where: { id },
+          data: { deletedAt: null },
+        });
+      } catch (error: any) {
+        logger.error({ model: '<%= model %>', action: 'restore', id, error: error.message });
+        throw createStandardError('INTERNAL_ERROR');
+      }
     },
 <% } %>
+
     async hardDelete(id: string) {
-      logger.warn({ model: '<%= model %>', action: 'hardDelete', id });
-      return db.<%= h.camel(model) %>.delete({ where: { id } });
+      <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
+      
+      if (!id) throw createStandardError('VALIDATION_ERROR');
+      
+      logger.warn({ model: '<%= model %>', action: 'hardDelete', id, userId });
+      
+      try {
+        return await db.<%= h.changeCase.camel(model) %>.delete({ where: { id } });
+      } catch (error: any) {
+        logger.error({ model: '<%= model %>', action: 'hardDelete', id, error: error.message });
+        
+        // P2003: Foreign key constraint failed
+        if (error?.code === 'P2003') {
+          throw createStandardError('CONFLICT');
+        }
+        // P2025: Record not found
+        if (error?.code === 'P2025') {
+          throw createStandardError('NOT_FOUND');
+        }
+        throw createStandardError('INTERNAL_ERROR');
+      }
     },
   };
 };

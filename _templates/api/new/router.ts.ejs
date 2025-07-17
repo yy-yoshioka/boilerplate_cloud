@@ -1,14 +1,29 @@
 ---
-to: apps/api/lib/routers/<%= h.camel(model) %>.router.ts
+to: apps/api/lib/routers/<%= h.changeCase.camel(model) %>.router.ts
 ---
 import { z } from 'zod';
+<% if (access === 'public') { %>
 import { publicProcedure, router } from '../trpc/server';
-import { create<%= model %>Service } from '../services/<%= h.camel(model) %>.service';
-import * as S from '../schemas/<%= h.camel(model) %>';
+<% } else if (access === 'protected') { %>
+import { protectedProcedure, router } from '../trpc/server';
+<% } else if (access === 'admin') { %>
+import { adminProcedure, router } from '../trpc/server';
+<% } else { %>
+// Fallback to protected for security
+import { protectedProcedure, router } from '../trpc/server';
+<% } %>
+import { create<%= model %>Service } from '../services/<%= h.changeCase.camel(model) %>.service';
+import * as S from '../schemas/<%= h.changeCase.camel(model) %>';
 import { createStandardError } from '../utils/errors';
 
-export const <%= h.camel(model) %>Router = router({
-  list: publicProcedure
+<% 
+const procedureName = access === 'public' ? 'publicProcedure' : 
+                     access === 'admin' ? 'adminProcedure' : 
+                     'protectedProcedure';
+%>
+
+export const <%= h.changeCase.camel(model) %>Router = router({
+  list: <%= procedureName %>
     .input(S.<%= model %>ListInput)
     .output(S.<%= model %>ListOutput)
     .query(async ({ input, ctx }) => {
@@ -16,7 +31,7 @@ export const <%= h.camel(model) %>Router = router({
       return service.list(input);
     }),
 
-  get: publicProcedure
+  get: <%= procedureName %>
     .input(S.<%= model %>GetInput)
     .output(S.<%= model %>)
     .query(async ({ input, ctx }) => {
@@ -26,7 +41,7 @@ export const <%= h.camel(model) %>Router = router({
       return result;
     }),
 
-  create: publicProcedure
+  create: <%= procedureName %>
     .input(S.<%= model %>CreateInput)
     .output(S.<%= model %>)
     .mutation(async ({ input, ctx }) => {
@@ -34,7 +49,7 @@ export const <%= h.camel(model) %>Router = router({
       return service.create(input);
     }),
 
-  update: publicProcedure
+  update: <%= procedureName %>
     .input(S.<%= model %>UpdateInput)
     .output(S.<%= model %>)
     .mutation(async ({ input, ctx }) => {
@@ -44,7 +59,8 @@ export const <%= h.camel(model) %>Router = router({
       return result;
     }),
 <% if (withSoftDelete) { %>
-  delete: publicProcedure
+
+  delete: <%= procedureName %>
     .input(S.<%= model %>DeleteInput)
     .output(S.<%= model %>DeleteOutput)
     .mutation(async ({ input, ctx }) => {
@@ -52,8 +68,21 @@ export const <%= h.camel(model) %>Router = router({
       await service.softDelete(input.id);
       return { success: true, id: input.id };
     }),
+
+  // Restore typically requires admin access
+  restore: <%= access === 'admin' ? 'adminProcedure' : procedureName %>
+    .input(S.<%= model %>DeleteInput)
+    .output(S.<%= model %>)
+    .mutation(async ({ input, ctx }) => {
+      const service = create<%= model %>Service(ctx);
+      const result = await service.restore(input.id);
+      if (!result) throw createStandardError('NOT_FOUND');
+      return result;
+    }),
 <% } else { %>
-  delete: publicProcedure
+
+  // Hard delete typically requires admin access
+  delete: <%= access === 'admin' ? 'adminProcedure' : 'adminProcedure' %>
     .input(S.<%= model %>DeleteInput)
     .output(S.<%= model %>DeleteOutput)
     .mutation(async ({ input, ctx }) => {

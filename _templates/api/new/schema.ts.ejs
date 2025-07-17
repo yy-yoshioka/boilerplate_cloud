@@ -1,39 +1,57 @@
 ---
-to: apps/api/lib/schemas/<%= h.camel(model) %>.ts
+to: apps/api/lib/schemas/<%= h.changeCase.camel(model) %>.ts
 ---
 import { z } from 'zod';
 
+// Common validation patterns
+const IdSchema = z.string().cuid('Invalid ID format');
+const EmailSchema = z.string().email('Invalid email format');
+const NameSchema = z.string().min(1, 'Name is required').max(255, 'Name too long');
+const SlugSchema = z.string().regex(/^[a-z0-9-]+$/, 'Invalid slug format');
+
 // TODO: Prismaスキーマに合わせて調整
 export const <%= model %> = z.object({
-  id: z.string().cuid(),
+  id: IdSchema,
   // 以下はサンプル。実際のモデルに合わせて修正
-  name: z.string().min(1).max(255),
+  name: NameSchema,
+  slug: SlugSchema.optional(),
+  description: z.string().max(1000, 'Description too long').optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'DRAFT']).default('ACTIVE'),
   createdAt: z.date(),
   updatedAt: z.date(),
 <% if (withSoftDelete) { %>  deletedAt: z.date().nullable(),<% } %>
+  
+  // TODO: Add user/organization relationships
+  <% if (access !== 'public') { %>
+  createdBy: IdSchema.optional(),
+  organizationId: IdSchema.optional(),
+  <% } %>
 });
 
 export type <%= model %> = z.infer<typeof <%= model %>>;
 
-// Input/Output schemas
+// Input/Output schemas with strict validation
 export const <%= model %>ListInput = z.object({
-  page: z.number().int().positive().optional().default(1),
+  page: z.number().int().positive().max(1000).optional().default(1),
   limit: z.number().int().positive().max(100).optional().default(20),
-  search: z.string().optional(),
+  search: z.string().min(1).max(255).optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'DRAFT']).optional(),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'name']).optional().default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
 });
 
 export const <%= model %>ListOutput = z.object({
   items: z.array(<%= model %>),
   pagination: z.object({
-    page: z.number(),
-    limit: z.number(),
-    total: z.number(),
-    totalPages: z.number(),
+    page: z.number().int().positive(),
+    limit: z.number().int().positive(),
+    total: z.number().int().min(0),
+    totalPages: z.number().int().min(0),
   }),
 });
 
 export const <%= model %>GetInput = z.object({
-  id: z.string().cuid(),
+  id: IdSchema,
 });
 
 export const <%= model %>CreateInput = <%= model %>.omit({
@@ -41,20 +59,27 @@ export const <%= model %>CreateInput = <%= model %>.omit({
   createdAt: true,
   updatedAt: true,
 <% if (withSoftDelete) { %>  deletedAt: true,<% } %>
-});
+  <% if (access !== 'public') { %>
+  createdBy: true, // Will be set from context
+  <% } %>
+}).strict(); // Prevent unknown properties
 
 export const <%= model %>UpdateInput = z.object({
-  id: z.string().cuid(),
-  data: <%= model %>CreateInput.partial(),
+  id: IdSchema,
+  data: <%= model %>CreateInput.partial().strict(),
 });
 
-export const <%= model %>UpdateData = <%= model %>CreateInput.partial();
+export const <%= model %>UpdateData = <%= model %>CreateInput.partial().strict();
 
 export const <%= model %>DeleteInput = z.object({
-  id: z.string().cuid(),
+  id: IdSchema,
 });
 
 export const <%= model %>DeleteOutput = z.object({
   success: z.boolean(),
-  id: z.string().cuid(),
+  id: IdSchema,
 });
+
+// Additional validation helpers
+export const validate<%= model %>Name = (name: string) => NameSchema.safeParse(name);
+export const validate<%= model %>Id = (id: string) => IdSchema.safeParse(id);
