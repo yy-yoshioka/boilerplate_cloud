@@ -17,7 +17,16 @@
       "Bash(yarn build:*)",
       "Bash(npx turbo build:*)",
       "Bash(git push:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(chmod:*)",
+      "Bash(tree:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git reset:*)",
+      "Bash(HUSKY=0 git commit -m \"$(cat <<''EOF''\nfeat: Boilerplate Cloud共通ファイル基盤を追加\n\n- 関数型プログラミング用ESLint設定を追加\n- Hygenコード生成ツール設定を追加\n- 共通エラー定義・バリデーション定数を追加\n- TODOチェックスクリプトを追加（spec/testファイルを除外）\n- Scaffold検証用GitHub Actionsワークフローを追加\n- Huskyプリコミットフックを強化（ファイル保護・TODOチェック）\n- API初期化用bootstrap.tsを追加\n- CODEOWNERSとコントリビューションガイドを追加\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(yarn add:*)",
+      "Bash(yarn verify-scaffold:*)",
+      "Bash(HUSKY=0 git commit -m \"$(cat <<''EOF''\nfeat: 開発環境の堅牢性向上\n\n- Prismaエラーハンドリングとロギング機能を強化\n- lint-staged設定をTypeScript/YAML向けに最適化\n- verify-scaffoldスクリプトにERROR/ErrorMessages整合性チェックを追加\n- pre-commitフックのTODO/FIXME/XXX検査を拡張\n- tsconfig.base.jsonにallowSyntheticDefaultImportsを追加\n- pino-prettyを追加して開発環境でのログ可読性を向上\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(gh pr create:*)"
     ],
     "deny": []
   }
