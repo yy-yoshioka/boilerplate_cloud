@@ -1,8 +1,5 @@
 {
-  "version": 2,
-  "buildCommand": "yarn build --filter=@boilerplate-cloud/web",
+  "buildCommand": "cd apps/web && yarn build",
   "outputDirectory": "apps/web/.next",
-  "installCommand": "yarn install",
-  "framework": "nextjs",
-  "rootDirectory": "apps/web"
+  "installCommand": "yarn install"
 }
