@@ -23,7 +23,7 @@ describe('Project Router', () => {
   it('should create Project', async () => {
     const input = { name: 'Test' };
     const created = { id: '1', ...input, createdAt: new Date(), updatedAt: new Date() };
-    
+
     ctx.db.Project.create.mockResolvedValue(created);
 
     const caller = ProjectRouter.createCaller(ctx);

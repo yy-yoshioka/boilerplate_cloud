@@ -49,5 +49,4 @@ export const ProjectRouter = router({
       await service.softDelete(input.id);
       return { success: true, id: input.id };
     }),
-
 });

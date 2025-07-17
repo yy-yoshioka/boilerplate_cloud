@@ -15,7 +15,7 @@ yarn gen:api Product --fields=name,sku,price
 ## 生成ファイル
 
 - `routers/<model>.router.ts` - tRPCルーター
-- `services/<model>.service.ts` - ビジネスロジック  
+- `services/<model>.service.ts` - ビジネスロジック
 - `schemas/<model>.ts` - Zodスキーマ
 - `__tests__/<model>.spec.ts` - テスト
 

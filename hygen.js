@@ -13,6 +13,6 @@ module.exports = {
       trpcPath: '@boilerplate/trpc',
       utilsPath: '@boilerplate/shared-utils',
       typesPath: '@boilerplate/shared-types',
-    }
-  }
+    },
+  },
 };

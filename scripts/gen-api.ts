@@ -22,7 +22,9 @@ const main = async () => {
   if (!model || !/^[A-Z][a-zA-Z0-9]*$/.test(model)) {
     console.error('Usage: yarn gen:api <ModelName> [options]');
     console.error('Options:');
-    console.error('  --access=level       Set access level (public, protected, admin) [default: protected]');
+    console.error(
+      '  --access=level       Set access level (public, protected, admin) [default: protected]',
+    );
     console.error('  --no-soft-delete     Disable soft delete');
     console.error('  --fields=name,email  Specify searchable fields');
     console.error('  --no-verify          Skip git hooks (CI only)');

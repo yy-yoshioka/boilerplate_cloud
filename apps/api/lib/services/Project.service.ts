@@ -4,7 +4,7 @@ import { createStandardError } from '../utils/errors';
 
 export const createProjectService = (ctx: Context) => {
   const { db, logger } = ctx;
-  const searchFields = 'name,description'.split(',').map(f => f.trim());
+  const searchFields = 'name,description'.split(',').map((f) => f.trim());
 
   return {
     async list(input: S.ProjectListInput) {
@@ -12,9 +12,9 @@ export const createProjectService = (ctx: Context) => {
       const where = {
         deletedAt: null,
         ...(search && {
-          OR: searchFields.map(field => ({
-            [field]: { contains: search, mode: 'insensitive' as const }
-          }))
+          OR: searchFields.map((field) => ({
+            [field]: { contains: search, mode: 'insensitive' as const },
+          })),
         }),
       };
 
@@ -53,7 +53,7 @@ export const createProjectService = (ctx: Context) => {
     async update(id: string, data: S.ProjectUpdateData) {
       const existing = await this.get(id);
       if (!existing) throw createStandardError('NOT_FOUND');
-      
+
       logger.info({ model: 'Project', action: 'update', id });
       return db.Project.update({
         where: { id },
@@ -64,7 +64,7 @@ export const createProjectService = (ctx: Context) => {
     async softDelete(id: string) {
       const existing = await this.get(id);
       if (!existing) throw createStandardError('NOT_FOUND');
-      
+
       logger.info({ model: 'Project', action: 'softDelete', id });
       return db.Project.update({
         where: { id },
