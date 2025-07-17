@@ -6,10 +6,7 @@ const { ERROR, ErrorMessages } = require('../packages/shared-types/src/errors');
 
 const main = async () => {
   // TODO検査
-  const files = await globby([
-    'apps/api/lib/**/*.{ts,tsx}',
-    '!**/*.{spec,test}.ts'
-  ]);
+  const files = await globby(['apps/api/lib/**/*.{ts,tsx}', '!**/*.{spec,test}.ts']);
 
   const todoOffenders = [];
 
@@ -28,8 +25,8 @@ const main = async () => {
 
   // ERROR/ErrorMessages整合性チェック
   const errorKeys = Object.keys(ERROR);
-  const missingMessages = errorKeys.filter(key => !ErrorMessages[key]);
-  
+  const missingMessages = errorKeys.filter((key) => !ErrorMessages[key]);
+
   if (missingMessages.length > 0) {
     console.error('⛔  ErrorMessagesに定義が不足しています:');
     missingMessages.forEach((key) => console.error(`   • ${key}`));
@@ -38,8 +35,8 @@ const main = async () => {
 
   // ErrorMessagesに余分なキーがないかチェック
   const messageKeys = Object.keys(ErrorMessages);
-  const extraMessages = messageKeys.filter(key => !(key in ERROR));
-  
+  const extraMessages = messageKeys.filter((key) => !(key in ERROR));
+
   if (extraMessages.length > 0) {
     console.error('⛔  ErrorMessagesに余分な定義があります:');
     extraMessages.forEach((key) => console.error(`   • ${key}`));

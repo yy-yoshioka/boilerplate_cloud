@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+echo "🔍 Running pre-commit checks..."
+
 # ==== Write-protect shared errors ====
 CHANGED=$(git diff --cached --name-only -- packages/shared-types/src/errors.ts packages/shared-types/src/validation.ts)
 if [ -n "$CHANGED" ]; then
@@ -14,5 +16,14 @@ if git diff --cached | grep -E "(TODO|FIXME|XXX):" > /dev/null; then
   exit 1
 fi
 
-# ==== lint-staged実行 ====
+# ==== Auto-format and lint staged files ====
+echo "🎨 Formatting and linting staged files..."
 yarn lint-staged
+
+# Check if lint-staged failed
+if [ $? -ne 0 ]; then
+  echo "❌ Lint-staged failed. Please fix the issues before committing."
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"

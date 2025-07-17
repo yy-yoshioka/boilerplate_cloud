@@ -4,9 +4,7 @@ import type { LogContext } from '@boilerplate/shared-types';
 
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
-  transport: process.env.NODE_ENV === 'development' 
-    ? { target: 'pino-pretty' } 
-    : undefined
+  transport: process.env.NODE_ENV === 'development' ? { target: 'pino-pretty' } : undefined,
 });
 
 const prisma = new PrismaClient({
@@ -35,20 +33,23 @@ prisma.$use(async (params, next) => {
   const before = Date.now();
   const result = await next(params);
   const after = Date.now();
-  
-  logger.debug({
-    model: params.model,
-    action: params.action,
-    duration: after - before,
-  }, 'Prisma query executed');
-  
+
+  logger.debug(
+    {
+      model: params.model,
+      action: params.action,
+      duration: after - before,
+    },
+    'Prisma query executed',
+  );
+
   return result;
 });
 
 /** 関数ベース DI – class 禁止 */
 export const createContext = (ctx: LogContext) => ({
   db: prisma,
-  logger: logger.child(ctx)
+  logger: logger.child(ctx),
 });
 
 // グレースフルシャットダウン
