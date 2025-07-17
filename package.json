@@ -19,11 +19,12 @@
     "docker:dev": "docker-compose -f docker-compose.dev.yml up -d",
     "docker:down": "docker-compose -f docker-compose.dev.yml down",
     "docker:logs": "docker-compose -f docker-compose.dev.yml logs -f",
-    "prepare": "husky",
+    "prepare": "husky install",
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "verify-scaffold": "ts-node scripts/verify-scaffold.ts"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
@@ -33,23 +34,24 @@
     "eslint": "^8.57.0",
     "eslint-config-turbo": "^1.13.0",
     "eslint-plugin-functional": "^6.0.0",
+    "globby": "^14.0.0",
     "husky": "^9.0.11",
     "hygen": "^6.2.11",
     "lint-staged": "^15.2.2",
+    "pino-pretty": "^13.0.0",
     "prettier": "^3.2.5",
-    "turbo": "^2.5.4",
-    "typescript": "^5.3.3",
     "prisma": "^6.11.1",
     "prisma-zod-generator": "^0.8.13",
-    "globby": "^14.0.0",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "turbo": "^2.5.4",
+    "typescript": "^5.3.3"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
+    "*.{ts,tsx}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,md,css}": [
+    "*.{json,md,yml,yaml}": [
       "prettier --write"
     ]
   },
@@ -60,7 +62,7 @@
   "packageManager": "yarn@1.22.19",
   "dependencies": {
     "@prisma/client": "^6.11.1",
-    "zod": "^3.23.8",
-    "pino": "^8.17.2"
+    "pino": "^8.17.2",
+    "zod": "^3.23.8"
   }
 }

@@ -2,29 +2,17 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 # ==== Write-protect shared errors ====
-# 初回作成時は除外
-if [ ! -f packages/shared-types/src/errors.ts ] || [ ! -f packages/shared-types/src/validation.ts ]; then
-  echo "📝 Initial creation of protected files detected, allowing..."
-else
-  CHANGED=$(git diff --cached --name-only -- packages/shared-types/src/errors.ts packages/shared-types/src/validation.ts)
-  if [ -n "$CHANGED" ]; then
-    echo "⛔ errors.ts / validation.ts は直接編集禁止。yarn gen:error を使って下さい。" >&2
-    exit 1
-  fi
-fi
-
-# ==== TODO検査 ====
-git diff --cached | grep -q "TODO:" && echo "❌ TODOが残っています" && exit 1
-
-echo "🔍 Running pre-commit checks..."
-
-# lint-stagedを実行（変更されたファイルのみチェック）
-npx lint-staged
-
-# lint-stagedが失敗した場合
-if [ $? -ne 0 ]; then
-  echo "❌ Lint-staged failed. Please fix the issues before committing."
+CHANGED=$(git diff --cached --name-only -- packages/shared-types/src/errors.ts packages/shared-types/src/validation.ts)
+if [ -n "$CHANGED" ]; then
+  echo "⛔ errors.ts / validation.ts は直接編集禁止。yarn gen:error を使って下さい。" >&2
   exit 1
 fi
 
-echo "✅ Pre-commit checks passed!"
+# ==== TODO/FIXME/XXX検査 ====
+if git diff --cached | grep -E "(TODO|FIXME|XXX):" > /dev/null; then
+  echo "❌ TODO/FIXME/XXXが残っています" >&2
+  exit 1
+fi
+
+# ==== lint-staged実行 ====
+yarn lint-staged

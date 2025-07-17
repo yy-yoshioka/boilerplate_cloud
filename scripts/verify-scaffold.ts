@@ -1,25 +1,53 @@
 #!/usr/bin/env ts-node
 
-import { globby } from 'globby';
-import { readFile } from 'fs/promises';
+const { globby } = require('globby');
+const { readFile } = require('fs/promises');
+const { ERROR, ErrorMessages } = require('../packages/shared-types/src/errors');
 
-const main = async (): Promise<void> => {
-  const files = await globby(['apps/api/lib/**/*.{ts,tsx}', '!**/*.{spec,test}.ts']);
+const main = async () => {
+  // TODO検査
+  const files = await globby([
+    'apps/api/lib/**/*.{ts,tsx}',
+    '!**/*.{spec,test}.ts'
+  ]);
 
-  const offenders: string[] = [];
+  const todoOffenders = [];
 
   for (const file of files) {
     const content = await readFile(file, 'utf8');
-    if (content.includes('TODO:')) offenders.push(file);
+    if (content.match(/(?:TODO|FIXME|XXX):/)) {
+      todoOffenders.push(file);
+    }
   }
 
-  if (offenders.length > 0) {
-    console.error('⛔  残 TODO が存在します:');
-    offenders.forEach((f) => console.error(`   • ${f}`));
+  if (todoOffenders.length > 0) {
+    console.error('⛔  残TODO/FIXME/XXXが存在します:');
+    todoOffenders.forEach((f) => console.error(`   • ${f}`));
     process.exit(1);
   }
 
-  console.log('✅  Scaffold drift なし (TODO 0)');
+  // ERROR/ErrorMessages整合性チェック
+  const errorKeys = Object.keys(ERROR);
+  const missingMessages = errorKeys.filter(key => !ErrorMessages[key]);
+  
+  if (missingMessages.length > 0) {
+    console.error('⛔  ErrorMessagesに定義が不足しています:');
+    missingMessages.forEach((key) => console.error(`   • ${key}`));
+    process.exit(1);
+  }
+
+  // ErrorMessagesに余分なキーがないかチェック
+  const messageKeys = Object.keys(ErrorMessages);
+  const extraMessages = messageKeys.filter(key => !(key in ERROR));
+  
+  if (extraMessages.length > 0) {
+    console.error('⛔  ErrorMessagesに余分な定義があります:');
+    extraMessages.forEach((key) => console.error(`   • ${key}`));
+    process.exit(1);
+  }
+
+  console.log('✅  Scaffold drift なし (TODO/FIXME/XXX: 0)');
+  console.log('✅  ERROR/ErrorMessages 整合性 OK');
 };
 
 main().catch((e) => {
