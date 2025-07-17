@@ -1,0 +1,37 @@
+---
+to: apps/api/__tests__/<%= h.camel(model) %>.spec.ts
+---
+import { describe, expect, it, beforeEach } from 'vitest';
+import { <%= h.camel(model) %>Router } from '../lib/routers/<%= h.camel(model) %>.router';
+import { createMockContext } from '../lib/test/helpers';
+
+describe('<%= model %> Router', () => {
+  let ctx: ReturnType<typeof createMockContext>;
+
+  beforeEach(() => {
+    ctx = createMockContext();
+  });
+
+  it('should list <%= h.camel(model) %>s', async () => {
+    ctx.db.<%= h.camel(model) %>.findMany.mockResolvedValue([]);
+    ctx.db.<%= h.camel(model) %>.count.mockResolvedValue(0);
+
+    const caller = <%= h.camel(model) %>Router.createCaller(ctx);
+    const result = await caller.list({});
+
+    expect(result.items).toEqual([]);
+    expect(result.pagination.total).toBe(0);
+  });
+
+  it('should create <%= h.camel(model) %>', async () => {
+    const input = { name: 'Test' };
+    const created = { id: '1', ...input, createdAt: new Date(), updatedAt: new Date() };
+    
+    ctx.db.<%= h.camel(model) %>.create.mockResolvedValue(created);
+
+    const caller = <%= h.camel(model) %>Router.createCaller(ctx);
+    const result = await caller.create(input);
+
+    expect(result).toEqual(created);
+  });
+});

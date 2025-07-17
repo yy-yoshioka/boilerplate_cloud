@@ -1,0 +1,83 @@
+---
+to: apps/api/lib/services/<%= h.camel(model) %>.service.ts
+---
+import type { Context } from '../types/context';
+import type * as S from '../schemas/<%= h.camel(model) %>';
+import { createStandardError } from '../utils/errors';
+
+export const create<%= model %>Service = (ctx: Context) => {
+  const { db, logger } = ctx;
+  const searchFields = '<%= searchableFields %>'.split(',').map(f => f.trim());
+
+  return {
+    async list(input: S.<%= model %>ListInput) {
+      const { page = 1, limit = 20, search } = input;
+      const where = {
+<% if (withSoftDelete) { %>        deletedAt: null,<% } %>
+        ...(search && {
+          OR: searchFields.map(field => ({
+            [field]: { contains: search, mode: 'insensitive' as const }
+          }))
+        }),
+      };
+
+      const [items, total] = await Promise.all([
+        db.<%= h.camel(model) %>.findMany({
+          where,
+          skip: (page - 1) * limit,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+        }),
+        db.<%= h.camel(model) %>.count({ where }),
+      ]);
+
+      return {
+        items,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    },
+
+    async get(id: string) {
+      return db.<%= h.camel(model) %>.findFirst({
+        where: { id<% if (withSoftDelete) { %>, deletedAt: null<% } %> },
+      });
+    },
+
+    async create(data: S.<%= model %>CreateInput) {
+      logger.info({ model: '<%= model %>', action: 'create' });
+      return db.<%= h.camel(model) %>.create({ data });
+    },
+
+    async update(id: string, data: S.<%= model %>UpdateData) {
+      const existing = await this.get(id);
+      if (!existing) throw createStandardError('NOT_FOUND');
+      
+      logger.info({ model: '<%= model %>', action: 'update', id });
+      return db.<%= h.camel(model) %>.update({
+        where: { id },
+        data,
+      });
+    },
+<% if (withSoftDelete) { %>
+    async softDelete(id: string) {
+      const existing = await this.get(id);
+      if (!existing) throw createStandardError('NOT_FOUND');
+      
+      logger.info({ model: '<%= model %>', action: 'softDelete', id });
+      return db.<%= h.camel(model) %>.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      });
+    },
+<% } %>
+    async hardDelete(id: string) {
+      logger.warn({ model: '<%= model %>', action: 'hardDelete', id });
+      return db.<%= h.camel(model) %>.delete({ where: { id } });
+    },
+  };
+};

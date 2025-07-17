@@ -1,0 +1,60 @@
+---
+to: apps/api/lib/schemas/<%= h.camel(model) %>.ts
+---
+import { z } from 'zod';
+
+// TODO: Prismaスキーマに合わせて調整
+export const <%= model %> = z.object({
+  id: z.string().cuid(),
+  // 以下はサンプル。実際のモデルに合わせて修正
+  name: z.string().min(1).max(255),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+<% if (withSoftDelete) { %>  deletedAt: z.date().nullable(),<% } %>
+});
+
+export type <%= model %> = z.infer<typeof <%= model %>>;
+
+// Input/Output schemas
+export const <%= model %>ListInput = z.object({
+  page: z.number().int().positive().optional().default(1),
+  limit: z.number().int().positive().max(100).optional().default(20),
+  search: z.string().optional(),
+});
+
+export const <%= model %>ListOutput = z.object({
+  items: z.array(<%= model %>),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+    totalPages: z.number(),
+  }),
+});
+
+export const <%= model %>GetInput = z.object({
+  id: z.string().cuid(),
+});
+
+export const <%= model %>CreateInput = <%= model %>.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+<% if (withSoftDelete) { %>  deletedAt: true,<% } %>
+});
+
+export const <%= model %>UpdateInput = z.object({
+  id: z.string().cuid(),
+  data: <%= model %>CreateInput.partial(),
+});
+
+export const <%= model %>UpdateData = <%= model %>CreateInput.partial();
+
+export const <%= model %>DeleteInput = z.object({
+  id: z.string().cuid(),
+});
+
+export const <%= model %>DeleteOutput = z.object({
+  success: z.boolean(),
+  id: z.string().cuid(),
+});

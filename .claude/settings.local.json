@@ -26,7 +26,10 @@
       "Bash(yarn add:*)",
       "Bash(yarn verify-scaffold:*)",
       "Bash(HUSKY=0 git commit -m \"$(cat <<''EOF''\nfeat: 開発環境の堅牢性向上\n\n- Prismaエラーハンドリングとロギング機能を強化\n- lint-staged設定をTypeScript/YAML向けに最適化\n- verify-scaffoldスクリプトにERROR/ErrorMessages整合性チェックを追加\n- pre-commitフックのTODO/FIXME/XXX検査を拡張\n- tsconfig.base.jsonにallowSyntheticDefaultImportsを追加\n- pino-prettyを追加して開発環境でのログ可読性を向上\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(gh pr create:*)"
+      "Bash(gh pr create:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(yarn gen:api:*)"
     ],
     "deny": []
   }

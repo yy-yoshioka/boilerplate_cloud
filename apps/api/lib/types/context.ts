@@ -48,3 +48,14 @@ export interface PaginatedResult<T> {
   hasNext: boolean;
   hasPrevious: boolean;
 }
+
+// Hygen用Context型
+import type { PrismaClient } from '@prisma/client';
+import type { Logger } from 'pino';
+
+export interface Context {
+  db: PrismaClient;
+  logger: Logger;
+  userId?: string;
+  organizationId?: string;
+}
