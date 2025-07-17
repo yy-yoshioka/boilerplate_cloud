@@ -12,8 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '18', cache: pnpm }
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec eslint . --max-warnings=0
-      - run: pnpm exec vitest run --run
-      - run: pnpm ts-node scripts/verify-scaffold.ts
+        with:
+          node-version: '20'
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: yarn type-check
+      - run: yarn test
+      - run: yarn verify-scaffold
