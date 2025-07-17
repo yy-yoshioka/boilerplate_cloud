@@ -15,7 +15,9 @@
       "Bash(yarn test:*)",
       "Bash(npx turbo test:*)",
       "Bash(yarn build:*)",
-      "Bash(npx turbo build:*)"
+      "Bash(npx turbo build:*)",
+      "Bash(git push:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }

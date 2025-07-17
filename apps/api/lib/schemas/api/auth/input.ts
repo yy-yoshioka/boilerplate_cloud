@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // パスワードバリデーションルール
-const passwordSchema = z
+export const passwordSchema = z
   .string()
   .min(8, 'パスワードは8文字以上で入力してください')
   .regex(/[a-zA-Z]/, 'パスワードには英字を含めてください')
@@ -62,6 +62,7 @@ export const ChangePasswordInputSchema = z.object({
 });
 
 // 型エクスポート
+export type Password = z.infer<typeof passwordSchema>;
 export type RegisterInput = z.infer<typeof RegisterInputSchema>;
 export type LoginInput = z.infer<typeof LoginInputSchema>;
 export type UpdateProfileInput = z.infer<typeof UpdateProfileInputSchema>;
