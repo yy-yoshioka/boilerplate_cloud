@@ -4,8 +4,8 @@ on:
   pull_request:
     paths:
       - '_templates/**'
-      - 'scripts/gen-api.ts'
       - 'hygen.js'
+      - 'scripts/hygen-smoke-test.sh'
 
 jobs:
   test:
@@ -21,7 +21,7 @@ jobs:
 
       - name: Test generation
         run: |
-          yarn gen:api TestModel --no-soft-delete --fields=name --access=protected
+          yarn hygen api new --model TestModel --withSoftDelete false --searchableFields name --access protected
           test -f apps/api/lib/routers/testModel.router.ts
           test -f apps/api/lib/services/testModel.service.ts
           test -f apps/api/lib/schemas/testModel.ts
