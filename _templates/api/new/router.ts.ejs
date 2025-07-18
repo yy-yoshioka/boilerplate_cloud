@@ -1,0 +1,95 @@
+---
+to: apps/api/lib/routers/<%= h.changeCase.camel(model) %>.router.ts
+---
+// SPDX-License-Identifier: MIT
+import { z } from 'zod';
+<% if (access === 'public') { %>
+import { publicProcedure, router } from '../trpc/server';
+<% } else if (access === 'protected') { %>
+import { protectedProcedure, router } from '../trpc/server';
+<% } else if (access === 'admin') { %>
+import { adminProcedure, router } from '../trpc/server';
+<% } else { %>
+// Fallback to protected for security
+import { protectedProcedure, router } from '../trpc/server';
+<% } %>
+import { create<%= model %>Service } from '../services/<%= h.changeCase.camel(model) %>.service';
+import * as S from '../schemas/<%= h.changeCase.camel(model) %>';
+import { createStandardError, ERROR_CODES } from '../utils/errors';
+
+<% 
+const procedureName = access === 'public' ? 'publicProcedure' : 
+                     access === 'admin' ? 'adminProcedure' : 
+                     'protectedProcedure';
+%>
+
+export const <%= h.changeCase.camel(model) %>Router = router({
+  list: <%= procedureName %>
+    .input(S.<%= model %>ListInput)
+    .output(S.<%= model %>ListOutput)
+    .query(async ({ input, ctx }) => {
+      const service = create<%= model %>Service(ctx);
+      return service.list(input);
+    }),
+
+  get: <%= procedureName %>
+    .input(S.<%= model %>GetInput)
+    .output(S.<%= model %>)
+    .query(async ({ input, ctx }) => {
+      const service = create<%= model %>Service(ctx);
+      const result = await service.get(input.id);
+      if (!result) throw createStandardError(ERROR_CODES.NOT_FOUND);
+      return result;
+    }),
+
+  create: <%= procedureName %>
+    .input(S.<%= model %>CreateInput)
+    .output(S.<%= model %>)
+    .mutation(async ({ input, ctx }) => {
+      const service = create<%= model %>Service(ctx);
+      return service.create(input);
+    }),
+
+  update: <%= procedureName %>
+    .input(S.<%= model %>UpdateInput)
+    .output(S.<%= model %>)
+    .mutation(async ({ input, ctx }) => {
+      const service = create<%= model %>Service(ctx);
+      const result = await service.update(input.id, input.data);
+      if (!result) throw createStandardError(ERROR_CODES.NOT_FOUND);
+      return result;
+    }),
+<% if (withSoftDelete) { %>
+
+  delete: <%= procedureName %>
+    .input(S.<%= model %>DeleteInput)
+    .output(S.<%= model %>DeleteOutput)
+    .mutation(async ({ input, ctx }) => {
+      const service = create<%= model %>Service(ctx);
+      await service.softDelete(input.id);
+      return { success: true, id: input.id };
+    }),
+
+  // Restore typically requires admin access
+  restore: <%= access === 'admin' ? 'adminProcedure' : procedureName %>
+    .input(S.<%= model %>DeleteInput)
+    .output(S.<%= model %>)
+    .mutation(async ({ input, ctx }) => {
+      const service = create<%= model %>Service(ctx);
+      const result = await service.restore(input.id);
+      if (!result) throw createStandardError(ERROR_CODES.NOT_FOUND);
+      return result;
+    }),
+<% } else { %>
+
+  // Hard delete typically requires admin access
+  delete: <%= access === 'admin' ? 'adminProcedure' : procedureName %>
+    .input(S.<%= model %>DeleteInput)
+    .output(S.<%= model %>DeleteOutput)
+    .mutation(async ({ input, ctx }) => {
+      const service = create<%= model %>Service(ctx);
+      await service.hardDelete(input.id);
+      return { success: true, id: input.id };
+    }),
+<% } %>
+});

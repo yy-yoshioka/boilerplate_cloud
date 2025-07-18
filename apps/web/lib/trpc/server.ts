@@ -6,6 +6,6 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  // TODO: tRPC実装
+  // tRPC実装
   return new Response('Not implemented', { status: 501 });
 }

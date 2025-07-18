@@ -19,3 +19,6 @@ coverage
 pnpm-lock.yaml
 yarn.lock
 package-lock.json
+
+# Hygen auto-generated reports
+hygen-*-report.md
