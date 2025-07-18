@@ -24,27 +24,37 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "verify-scaffold": "ts-node scripts/verify-scaffold.ts"
+    "prisma:format": "prisma format",
+    "verify-scaffold": "ts-node scripts/verify-scaffold.ts",
+    "gen:api": "echo 'Deprecated: Use `yarn hygen api new` instead' && exit 1",
+    "lint:fix": "eslint . --fix",
+    "test:hygen": "bash scripts/hygen-smoke-test.sh"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "@types/minimist": "^1.2.5",
     "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
+    "change-case": "^5.4.4",
     "eslint": "^8.57.0",
     "eslint-config-turbo": "^1.13.0",
     "eslint-plugin-functional": "^6.0.0",
+    "execa": "^9.6.0",
     "globby": "^14.0.0",
     "husky": "^9.0.11",
     "hygen": "^6.2.11",
     "lint-staged": "^15.2.2",
+    "minimist": "^1.2.8",
     "pino-pretty": "^13.0.0",
     "prettier": "^3.2.5",
     "prisma": "^6.11.1",
     "prisma-zod-generator": "^0.8.13",
     "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
     "turbo": "^2.5.4",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^1.5.1"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -62,6 +72,7 @@
   "packageManager": "yarn@1.22.19",
   "dependencies": {
     "@prisma/client": "^6.11.1",
+    "@trpc/server": "^11.4.3",
     "pino": "^8.17.2",
     "zod": "^3.23.8"
   }

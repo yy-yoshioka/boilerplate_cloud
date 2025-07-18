@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { PlatformRoleSchema } from '@zod-schemas/enums/PlatformRole.schema';
-
 // Public Account Schema - センシティブな情報を除外
 export const PublicAccountSchema = z.object({
   id: z.string().cuid(),

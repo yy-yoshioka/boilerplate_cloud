@@ -1,0 +1,37 @@
+name: Scaffold E2E
+
+on:
+  pull_request:
+    paths:
+      - '_templates/**'
+      - 'hygen.js'
+      - 'scripts/hygen-smoke-test.sh'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - run: yarn install --frozen-lockfile
+
+      - name: Test generation
+        run: |
+          yarn hygen api new --model TestModel --withSoftDelete false --searchableFields name --access protected
+          test -f apps/api/lib/routers/testModel.router.ts
+          test -f apps/api/lib/services/testModel.service.ts
+          test -f apps/api/lib/schemas/testModel.ts
+          test -f apps/api/__tests__/testModel.spec.ts
+
+      - name: Lint generated code
+        run: yarn lint:fix --max-warnings=0
+
+      - name: Run unit tests
+        run: yarn test
+
+      - name: Run simplified smoke tests
+        run: yarn test:hygen
