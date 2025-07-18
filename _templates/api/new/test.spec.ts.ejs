@@ -50,9 +50,11 @@ describe('<%= model %> Router', () => {
     <% if (access !== 'public') { %>
     it('should reject unauthenticated requests', async () => {
       ctx.userId = undefined;
-      const unauthenticatedCaller = <%= h.changeCase.camel(model) %>Router.createCaller(ctx);
+      const unauthCaller = <%= h.changeCase.camel(model) %>Router.createCaller(ctx);
 
-      await expect(unauthenticatedCaller.list({})).rejects.toThrow(TRPCError);
+      await expect(unauthCaller.list({})).rejects.toMatchObject({
+        code: 'UNAUTHORIZED',
+      } as TRPCError);
     });
     <% } %>
   });

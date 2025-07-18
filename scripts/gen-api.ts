@@ -9,7 +9,7 @@ const checkPrismaModel = (modelName: string): boolean => {
   try {
     const schemaPath = join(process.cwd(), 'prisma', 'schema.prisma');
     const schema = readFileSync(schemaPath, 'utf-8');
-    const modelRegex = new RegExp(`model\\s+${modelName}\\s*{`, 'i');
+    const modelRegex = new RegExp(`model\\\\s+${modelName}\\\\s*\\\\{`, 'i');
     return modelRegex.test(schema);
   } catch {
     return false;
@@ -90,15 +90,15 @@ const main = async () => {
       throw new Error(`Generation failed. Missing files: ${missingFiles.join(', ')}`);
     }
 
-    // Git add（生成ファイルのみ）
-    await execa('git', ['add', ...generatedFiles]);
-
-    // ESLint fix
+    // ESLint fix (BEFORE git add)
     console.log('🔧 Running ESLint fix...');
     await execa('yarn', ['eslint', '--fix', ...generatedFiles], {
       stdio: 'inherit',
       reject: false, // ESLintエラーでもプロセスを続行
     });
+
+    // Git add（ESLint fix後）
+    await execa('git', ['add', ...generatedFiles]);
 
     // Git commit
     const commitArgs = ['commit', '-m', `scaffold(${camelModel}): add ${model} api`];

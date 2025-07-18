@@ -5,21 +5,31 @@ module.exports = {
     // Hygenのargs.rawを使用（process.argvの直接参照を避ける）
     const argv = minimist(args.raw || []);
 
-    // CI/CD用: 必須引数チェック
+    // === 非対話モード ===
     if (argv.model) {
-      // withSoftDeleteは明示的な指定を要求
-      if (argv.withSoftDelete === undefined) {
-        throw new Error('--withSoftDelete true|false is required in non-interactive mode');
+      // --- 必須オプション検証 -----------------------------
+      const missing = [];
+      if (argv.withSoftDelete === undefined) missing.push('--withSoftDelete');
+      if (!argv.access)                   missing.push('--access');
+      if (missing.length) {
+        throw new Error(`Missing required flags in non‑interactive mode: ${missing.join(', ')}`);
       }
-
-      // 文字列と真偽値の両方に対応
-      const withSoftDelete = argv.withSoftDelete === true || argv.withSoftDelete === 'true';
+      // --- withSoftDelete 解析 -----------------------------
+      const withSoftDelete =
+        argv.withSoftDelete === true   ||
+        argv.withSoftDelete === 'true' ||
+        argv.withSoftDelete === '1';
+      // --- access バリデーション --------------------------
+      const accessLevels = ['public', 'protected', 'admin'];
+      if (!accessLevels.includes(argv.access)) {
+        throw new Error(`--access must be one of: ${accessLevels.join(', ')}`);
+      }
 
       return {
         model: argv.model,
         withSoftDelete,
         searchableFields: argv.searchableFields || 'name',
-        access: argv.access || 'protected', // デフォルトはprotected
+        access: argv.access,
       };
     }
 

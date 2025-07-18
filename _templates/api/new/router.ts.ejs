@@ -14,7 +14,7 @@ import { protectedProcedure, router } from '../trpc/server';
 <% } %>
 import { create<%= model %>Service } from '../services/<%= h.changeCase.camel(model) %>.service';
 import * as S from '../schemas/<%= h.changeCase.camel(model) %>';
-import { createStandardError } from '../utils/errors';
+import { createStandardError, ERROR_CODES } from '../utils/errors';
 
 <% 
 const procedureName = access === 'public' ? 'publicProcedure' : 
@@ -37,7 +37,7 @@ export const <%= h.changeCase.camel(model) %>Router = router({
     .query(async ({ input, ctx }) => {
       const service = create<%= model %>Service(ctx);
       const result = await service.get(input.id);
-      if (!result) throw createStandardError('NOT_FOUND');
+      if (!result) throw createStandardError(ERROR_CODES.NOT_FOUND);
       return result;
     }),
 
@@ -55,7 +55,7 @@ export const <%= h.changeCase.camel(model) %>Router = router({
     .mutation(async ({ input, ctx }) => {
       const service = create<%= model %>Service(ctx);
       const result = await service.update(input.id, input.data);
-      if (!result) throw createStandardError('NOT_FOUND');
+      if (!result) throw createStandardError(ERROR_CODES.NOT_FOUND);
       return result;
     }),
 <% if (withSoftDelete) { %>
@@ -76,7 +76,7 @@ export const <%= h.changeCase.camel(model) %>Router = router({
     .mutation(async ({ input, ctx }) => {
       const service = create<%= model %>Service(ctx);
       const result = await service.restore(input.id);
-      if (!result) throw createStandardError('NOT_FOUND');
+      if (!result) throw createStandardError(ERROR_CODES.NOT_FOUND);
       return result;
     }),
 <% } else { %>

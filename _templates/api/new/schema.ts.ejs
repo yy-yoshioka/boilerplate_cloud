@@ -38,7 +38,7 @@ export const <%= model %>ListInput = z.object({
   status: z.enum(['ACTIVE', 'INACTIVE', 'DRAFT']).optional(),
   sortBy: z.enum(['createdAt', 'updatedAt', 'name']).optional().default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
-});
+}).strict();
 
 export const <%= model %>ListOutput = z.object({
   items: z.array(<%= model %>),

@@ -1,8 +1,11 @@
 import { ERROR, ErrorMessages } from '@boilerplate/shared-types';
 import { TRPCError } from '@trpc/server';
 
+// Export ERROR_CODES for use in templates
+export const ERROR_CODES = ERROR;
+
 // HTTP status mapping for TRPC errors
-const httpStatusMap = {
+const httpStatusMap: Record<keyof typeof ERROR, string> = {
   UNAUTHORIZED: 'UNAUTHORIZED',
   FORBIDDEN: 'FORBIDDEN',
   INVALID_CREDENTIALS: 'UNAUTHORIZED',
@@ -10,7 +13,7 @@ const httpStatusMap = {
   CONFLICT: 'CONFLICT',
   VALIDATION_ERROR: 'BAD_REQUEST',
   INTERNAL_ERROR: 'INTERNAL_SERVER_ERROR',
-} as const;
+};
 
 // 2. Fallback メッセージ
 const defaultMessage = ErrorMessages.INTERNAL_ERROR;
