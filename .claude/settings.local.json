@@ -30,7 +30,9 @@
       "Bash(git checkout:*)",
       "Bash(git pull:*)",
       "Bash(yarn gen:api:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(yarn lint-staged)",
+      "Bash(yarn format)"
     ],
     "deny": []
   }

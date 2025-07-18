@@ -21,8 +21,14 @@ jobs:
       
       - name: Test generation
         run: |
-          yarn gen:api TestModel --no-soft-delete --fields=name
+          yarn gen:api TestModel --no-soft-delete --fields=name --access=protected
           test -f apps/api/lib/routers/testModel.router.ts
           test -f apps/api/lib/services/testModel.service.ts
           test -f apps/api/lib/schemas/testModel.ts
           test -f apps/api/__tests__/testModel.spec.ts
+
+      - name: Lint generated code
+        run: yarn lint:fix --max-warnings=0
+
+      - name: Run unit tests
+        run: yarn test

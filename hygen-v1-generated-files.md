@@ -129,9 +129,9 @@ import { create<%= model %>Service } from '../services/<%= h.changeCase.camel(mo
 import * as S from '../schemas/<%= h.changeCase.camel(model) %>';
 import { createStandardError } from '../utils/errors';
 
-<% 
-const procedureName = access === 'public' ? 'publicProcedure' : 
-                     access === 'admin' ? 'adminProcedure' : 
+<%
+const procedureName = access === 'public' ? 'publicProcedure' :
+                     access === 'admin' ? 'adminProcedure' :
                      'protectedProcedure';
 %>
 
@@ -221,7 +221,7 @@ import { createStandardError } from '../utils/errors';
 
 export const create<%= model %>Service = (ctx: Context) => {
   const { db, logger, userId } = ctx;
-  
+
   // 型安全な検索フィールド定義
   const searchFields = [<%= searchableFields.split(',').map(f => `'${f.trim()}'`).join(', ') %>] as const;
 
@@ -235,13 +235,13 @@ export const create<%= model %>Service = (ctx: Context) => {
   return {
     async list(input: S.<%= model %>ListInput) {
       <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
-      
+
       const { page = 1, limit = 20, search } = input;
-      
+
       // 入力値の検証
       if (page < 1) throw createStandardError('VALIDATION_ERROR');
       if (limit < 1 || limit > 100) throw createStandardError('VALIDATION_ERROR');
-      
+
       const where = {
 <% if (withSoftDelete) { %>        deletedAt: null,<% } %>
         <% if (access !== 'public') { %>// TODO: Add user/organization filtering based on your data model<% } %>
@@ -280,9 +280,9 @@ export const create<%= model %>Service = (ctx: Context) => {
 
     async get(id: string) {
       <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
-      
+
       if (!id) throw createStandardError('VALIDATION_ERROR');
-      
+
       try {
         return await db.<%= h.changeCase.camel(model) %>.findFirst({
           where: { id<% if (withSoftDelete) { %>, deletedAt: null<% } %> },
@@ -295,19 +295,19 @@ export const create<%= model %>Service = (ctx: Context) => {
 
     async create(data: S.<%= model %>CreateInput) {
       <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
-      
+
       logger.info({ model: '<%= model %>', action: 'create', userId });
-      
+
       try {
-        return await db.<%= h.changeCase.camel(model) %>.create({ 
+        return await db.<%= h.changeCase.camel(model) %>.create({
           data: {
             ...data,
             <% if (access !== 'public') { %>// TODO: Add user/organization association<% } %>
-          } 
+          }
         });
       } catch (error: any) {
         logger.error({ model: '<%= model %>', action: 'create', error: error.message });
-        
+
         // P2002: Unique constraint failed
         if (error?.code === 'P2002') {
           throw createStandardError('CONFLICT');
@@ -318,18 +318,18 @@ export const create<%= model %>Service = (ctx: Context) => {
 
     async update(id: string, data: S.<%= model %>UpdateData) {
       <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
-      
+
       if (!id) throw createStandardError('VALIDATION_ERROR');
-      
+
       const existing = await this.get(id);
       if (!existing) throw createStandardError('NOT_FOUND');
-      
+
       logger.info({ model: '<%= model %>', action: 'update', id, userId });
-      
+
       try {
         // Prismaの@updatedAtに任せるため、updatedAtは渡さない
         const { updatedAt, ...updateData } = data as any;
-        
+
         return await db.<%= h.changeCase.camel(model) %>.update({
           where: { id },
           data: updateData,
@@ -343,14 +343,14 @@ export const create<%= model %>Service = (ctx: Context) => {
 
     async softDelete(id: string) {
       <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
-      
+
       if (!id) throw createStandardError('VALIDATION_ERROR');
-      
+
       const existing = await this.get(id);
       if (!existing) throw createStandardError('NOT_FOUND');
-      
+
       logger.info({ model: '<%= model %>', action: 'softDelete', id, userId });
-      
+
       try {
         return await db.<%= h.changeCase.camel(model) %>.update({
           where: { id },
@@ -364,11 +364,11 @@ export const create<%= model %>Service = (ctx: Context) => {
 
     async restore(id: string) {
       <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
-      
+
       if (!id) throw createStandardError('VALIDATION_ERROR');
-      
+
       logger.info({ model: '<%= model %>', action: 'restore', id, userId });
-      
+
       try {
         return await db.<%= h.changeCase.camel(model) %>.update({
           where: { id },
@@ -383,16 +383,16 @@ export const create<%= model %>Service = (ctx: Context) => {
 
     async hardDelete(id: string) {
       <% if (access !== 'public') { %>ensureAuthenticated();<% } %>
-      
+
       if (!id) throw createStandardError('VALIDATION_ERROR');
-      
+
       logger.warn({ model: '<%= model %>', action: 'hardDelete', id, userId });
-      
+
       try {
         return await db.<%= h.changeCase.camel(model) %>.delete({ where: { id } });
       } catch (error: any) {
         logger.error({ model: '<%= model %>', action: 'hardDelete', id, error: error.message });
-        
+
         // P2003: Foreign key constraint failed
         if (error?.code === 'P2003') {
           throw createStandardError('CONFLICT');
@@ -435,7 +435,7 @@ export const <%= model %> = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
 <% if (withSoftDelete) { %>  deletedAt: z.date().nullable(),<% } %>
-  
+
   // TODO: Add user/organization relationships
   <% if (access !== 'public') { %>
   createdBy: IdSchema.optional(),
@@ -584,20 +584,20 @@ describe('<%= model %> Router', () => {
   describe('create', () => {
     it('should create <%= h.changeCase.camel(model) %> successfully', async () => {
       const input = { name: 'New Test' };
-      const created = { 
-        id: '1', 
-        ...input, 
-        createdAt: new Date(), 
+      const created = {
+        id: '1',
+        ...input,
+        createdAt: new Date(),
         updatedAt: new Date()<% if (withSoftDelete) { %>,
         deletedAt: null<% } %>
       };
-      
+
       ctx.db.<%= h.changeCase.camel(model) %>.create.mockResolvedValue(created);
 
       const result = await caller.create(input);
 
       expect(result).toEqual(created);
-      expect(ctx.db.<%= h.changeCase.camel(model) %>.create).toHaveBeenCalledWith({ 
+      expect(ctx.db.<%= h.changeCase.camel(model) %>.create).toHaveBeenCalledWith({
         data: expect.objectContaining(input)
       });
     });
@@ -613,7 +613,7 @@ describe('<%= model %> Router', () => {
     it('should update <%= h.changeCase.camel(model) %> successfully', async () => {
       const existing = { id: '1', name: 'Original', createdAt: new Date(), updatedAt: new Date() };
       const updated = { ...existing, name: 'Updated' };
-      
+
       ctx.db.<%= h.changeCase.camel(model) %>.findFirst.mockResolvedValue(existing);
       ctx.db.<%= h.changeCase.camel(model) %>.update.mockResolvedValue(updated);
 
@@ -635,7 +635,7 @@ describe('<%= model %> Router', () => {
     it('should soft delete <%= h.changeCase.camel(model) %> successfully', async () => {
       const existing = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
       const deleted = { ...existing, deletedAt: new Date() };
-      
+
       ctx.db.<%= h.changeCase.camel(model) %>.findFirst.mockResolvedValue(existing);
       ctx.db.<%= h.changeCase.camel(model) %>.update.mockResolvedValue(deleted);
 
@@ -650,7 +650,7 @@ describe('<%= model %> Router', () => {
 
     it('should restore <%= h.changeCase.camel(model) %> successfully', async () => {
       const restored = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date(), deletedAt: null };
-      
+
       ctx.db.<%= h.changeCase.camel(model) %>.update.mockResolvedValue(restored);
 
       const result = await caller.restore({ id: '1' });
@@ -664,7 +664,7 @@ describe('<%= model %> Router', () => {
     <% } else { %>
     it('should hard delete <%= h.changeCase.camel(model) %> successfully', async () => {
       const deleted = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
-      
+
       ctx.db.<%= h.changeCase.camel(model) %>.delete.mockResolvedValue(deleted);
 
       const result = await caller.delete({ id: '1' });
@@ -701,10 +701,13 @@ describe('<%= model %> Router', () => {
 ## Quick Start
 
 \`\`\`bash
+
 # 対話型
+
 yarn gen:api
 
 # 非対話型（推奨）
+
 yarn gen:api User
 yarn gen:api Post --no-soft-delete
 yarn gen:api Product --fields=name,sku,price
@@ -715,7 +718,7 @@ yarn gen:api Product --fields=name,sku,price
 - \`routers/<model>.router.ts\` - tRPCルーター
 - \`services/<model>.service.ts\` - ビジネスロジック
 - \`schemas/<model>.ts\` - Zodスキーマ
-- \`__tests__/<model>.spec.ts\` - テスト
+- \`**tests**/<model>.spec.ts\` - テスト
 
 ## 生成後の手順
 
@@ -1054,12 +1057,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: 
+        with:
           node-version: '18'
           cache: 'yarn'
-      
+
       - run: yarn install --frozen-lockfile
-      
+
       - name: Test generation
         run: |
           yarn gen:api TestModel --no-soft-delete --fields=name

@@ -10,13 +10,13 @@ module.exports = {
       // --- 必須オプション検証 -----------------------------
       const missing = [];
       if (argv.withSoftDelete === undefined) missing.push('--withSoftDelete');
-      if (!argv.access)                   missing.push('--access');
+      if (!argv.access) missing.push('--access');
       if (missing.length) {
         throw new Error(`Missing required flags in non‑interactive mode: ${missing.join(', ')}`);
       }
       // --- withSoftDelete 解析 -----------------------------
       const withSoftDelete =
-        argv.withSoftDelete === true   ||
+        argv.withSoftDelete === true ||
         argv.withSoftDelete === 'true' ||
         argv.withSoftDelete === '1';
       // --- access バリデーション --------------------------

@@ -1,22 +1,22 @@
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import type { Context } from '../types/context';
 import type { PrismaClient } from '@prisma/client';
 
 const createMockModel = () => ({
-  findMany: jest.fn(),
-  findFirst: jest.fn(),
-  findUnique: jest.fn(),
-  findUniqueOrThrow: jest.fn(),
-  create: jest.fn(),
-  createMany: jest.fn(),
-  update: jest.fn(),
-  updateMany: jest.fn(),
-  upsert: jest.fn(),
-  delete: jest.fn(),
-  deleteMany: jest.fn(),
-  count: jest.fn(),
-  aggregate: jest.fn(),
-  groupBy: jest.fn(),
+  findMany: vi.fn(),
+  findFirst: vi.fn(),
+  findUnique: vi.fn(),
+  findUniqueOrThrow: vi.fn(),
+  create: vi.fn(),
+  createMany: vi.fn(),
+  update: vi.fn(),
+  updateMany: vi.fn(),
+  upsert: vi.fn(),
+  delete: vi.fn(),
+  deleteMany: vi.fn(),
+  count: vi.fn(),
+  aggregate: vi.fn(),
+  groupBy: vi.fn(),
 });
 
 // Prismaの全モデルリスト（実際のschema.prismaに合わせて更新）
@@ -56,26 +56,26 @@ export const createMockContext = (focusModel?: string): Context => {
 
   const mockDb = {
     ...models,
-    $transaction: jest.fn((fn: any) => {
+    $transaction: vi.fn((fn: any) => {
       if (typeof fn === 'function') {
         return fn(mockDb);
       }
       return Promise.all(fn as any[]);
     }),
-    $connect: jest.fn(),
-    $disconnect: jest.fn(),
-    $executeRaw: jest.fn(),
-    $queryRaw: jest.fn(),
+    $connect: vi.fn(),
+    $disconnect: vi.fn(),
+    $executeRaw: vi.fn(),
+    $queryRaw: vi.fn(),
   } as unknown as PrismaClient;
 
   const mockLogger = {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-    fatal: jest.fn(),
-    trace: jest.fn(),
-    child: jest.fn(() => mockLogger),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+    child: vi.fn(() => mockLogger),
   };
 
   return {
@@ -84,6 +84,16 @@ export const createMockContext = (focusModel?: string): Context => {
   };
 };
 
+/**
+ * 型安全にモックモデルを取得するユーティリティ。
+ *   const projectModel = getMockModel(ctx, 'project');
+ *   projectModel.findMany.mockResolvedValue([...]);
+ */
+export const getMockModel = <K extends keyof PrismaClient>(ctx: Context, modelName: K) => {
+  return (ctx.db as PrismaClient)[modelName];
+};
+
+// ------------------------- 以下はダミーデータ生成 -------------------------
 // 特定のモデルに対するモックデータ生成ヘルパー
 export const createMockData = {
   account: (override = {}) => ({

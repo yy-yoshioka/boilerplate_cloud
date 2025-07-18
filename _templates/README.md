@@ -9,7 +9,11 @@ yarn gen:api
 # 非対話型（推奨）
 yarn gen:api User
 yarn gen:api Post --no-soft-delete
-yarn gen:api Product --fields=name,sku,price
+# アクセス制御の指定
+yarn gen:api Product --access=admin
+
+# 検索可能フィールドを複数指定
+yarn gen:api Product --fields=name,sku,price --access=protected
 ```
 
 ## 生成ファイル
