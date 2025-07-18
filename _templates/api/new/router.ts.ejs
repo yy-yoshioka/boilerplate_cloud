@@ -1,6 +1,7 @@
 ---
 to: apps/api/lib/routers/<%= h.changeCase.camel(model) %>.router.ts
 ---
+// SPDX-License-Identifier: MIT
 import { z } from 'zod';
 <% if (access === 'public') { %>
 import { publicProcedure, router } from '../trpc/server';

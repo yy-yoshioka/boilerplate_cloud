@@ -459,3 +459,36 @@ model Usage {
 
   @@index([organizationId, recordedAt])
 }
+
+model Foo {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  email       String?
+  status      String    @default("ACTIVE")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Bar {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  email       String?
+  status      String    @default("ACTIVE")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Baz {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  email       String?
+  status      String    @default("ACTIVE")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
