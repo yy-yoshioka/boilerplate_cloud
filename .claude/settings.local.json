@@ -44,7 +44,8 @@
       "Bash(sed:*)",
       "Bash(yarn eslint:*)",
       "Bash(test:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(git branch:*)"
     ],
     "deny": []
   }
