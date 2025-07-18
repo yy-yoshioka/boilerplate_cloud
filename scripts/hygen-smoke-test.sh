@@ -8,10 +8,10 @@ set -euo pipefail
 START_TIME=$(date +%s)
 
 echo "🧹 Cleaning up previous generated files..."
-rm -rf apps/api/lib/routers/{foo,bar,baz}.*
-rm -rf apps/api/lib/services/{foo,bar,baz}.*
-rm -rf apps/api/lib/schemas/{foo,bar,baz}.*
-rm -rf apps/api/__tests__/{foo,bar,baz}.*
+rm -rf apps/api/lib/routers/{foo,bar,baz,fooPublic,fooPublicSoft,barProtected,barProtectedSoft,bazAdmin,bazAdminSoft}.*
+rm -rf apps/api/lib/services/{foo,bar,baz,fooPublic,fooPublicSoft,barProtected,barProtectedSoft,bazAdmin,bazAdminSoft}.*
+rm -rf apps/api/lib/schemas/{foo,bar,baz,fooPublic,fooPublicSoft,barProtected,barProtectedSoft,bazAdmin,bazAdminSoft}.*
+rm -rf apps/api/__tests__/{foo,bar,baz,fooPublic,fooPublicSoft,barProtected,barProtectedSoft,bazAdmin,bazAdminSoft}.*
 
 # trpc/serverが存在しない場合は作成
 if [[ ! -f "apps/api/lib/trpc/server.ts" ]]; then
@@ -40,35 +40,59 @@ export const adminProcedure = t.procedure.use((opts) => {
 EOF
 fi
 
-echo "🚀 Generating test models (3 patterns)..."
+echo "🚀 Generating test models (6 patterns)..."
 
-# パターン1: 最小 (public, no soft delete)
-echo "  → Foo (public, no soft delete)"
-yarn hygen api new --model Foo --access=public --withSoftDelete=false --searchableFields=name
+# 1) public / no soft-delete
+echo "  → FooPublic (public, no soft delete)"
+yarn hygen api new --model FooPublic --access=public --withSoftDelete=false --searchableFields=name
 
-# パターン2: 標準 (protected, with soft delete)
-echo "  → Bar (protected, with soft delete)"
-yarn hygen api new --model Bar --access=protected --withSoftDelete=true --searchableFields=name,description
+# 2) public / soft-delete
+echo "  → FooPublicSoft (public, with soft delete)"
+yarn hygen api new --model FooPublicSoft --access=public --withSoftDelete=true --searchableFields=name
 
-# パターン3: 最大 (admin, multiple fields)
-echo "  → Baz (admin, multiple fields)"
-yarn hygen api new --model Baz --access=admin --withSoftDelete=true --searchableFields=name,email
+# 3) protected / no soft-delete
+echo "  → BarProtected (protected, no soft delete)"
+yarn hygen api new --model BarProtected --access=protected --withSoftDelete=false --searchableFields=name
+
+# 4) protected / soft-delete
+echo "  → BarProtectedSoft (protected, with soft delete)"
+yarn hygen api new --model BarProtectedSoft --access=protected --withSoftDelete=true --searchableFields=name,description
+
+# 5) admin / no soft-delete
+echo "  → BazAdmin (admin, no soft delete)"
+yarn hygen api new --model BazAdmin --access=admin --withSoftDelete=false --searchableFields=name
+
+# 6) admin / soft-delete
+echo "  → BazAdminSoft (admin, with soft delete)"
+yarn hygen api new --model BazAdminSoft --access=admin --withSoftDelete=true --searchableFields=name,email
 
 # 生成ファイルの存在確認
 echo "📋 Checking generated files..."
 EXPECTED_FILES=(
-    "apps/api/lib/routers/foo.router.ts"
-    "apps/api/lib/services/foo.service.ts"
-    "apps/api/lib/schemas/foo.ts"
-    "apps/api/__tests__/foo.spec.ts"
-    "apps/api/lib/routers/bar.router.ts"
-    "apps/api/lib/services/bar.service.ts"
-    "apps/api/lib/schemas/bar.ts"
-    "apps/api/__tests__/bar.spec.ts"
-    "apps/api/lib/routers/baz.router.ts"
-    "apps/api/lib/services/baz.service.ts"
-    "apps/api/lib/schemas/baz.ts"
-    "apps/api/__tests__/baz.spec.ts"
+    "apps/api/lib/routers/fooPublic.router.ts"
+    "apps/api/lib/services/fooPublic.service.ts"
+    "apps/api/lib/schemas/fooPublic.ts"
+    "apps/api/__tests__/fooPublic.spec.ts"
+    "apps/api/lib/routers/fooPublicSoft.router.ts"
+    "apps/api/lib/services/fooPublicSoft.service.ts"
+    "apps/api/lib/schemas/fooPublicSoft.ts"
+    "apps/api/__tests__/fooPublicSoft.spec.ts"
+    "apps/api/lib/routers/barProtected.router.ts"
+    "apps/api/lib/services/barProtected.service.ts"
+    "apps/api/lib/schemas/barProtected.ts"
+    "apps/api/__tests__/barProtected.spec.ts"
+    "apps/api/lib/routers/barProtectedSoft.router.ts"
+    "apps/api/lib/services/barProtectedSoft.service.ts"
+    "apps/api/lib/schemas/barProtectedSoft.ts"
+    "apps/api/__tests__/barProtectedSoft.spec.ts"
+    "apps/api/lib/routers/bazAdmin.router.ts"
+    "apps/api/lib/services/bazAdmin.service.ts"
+    "apps/api/lib/schemas/bazAdmin.ts"
+    "apps/api/__tests__/bazAdmin.spec.ts"
+    "apps/api/lib/routers/bazAdminSoft.router.ts"
+    "apps/api/lib/services/bazAdminSoft.service.ts"
+    "apps/api/lib/schemas/bazAdminSoft.ts"
+    "apps/api/__tests__/bazAdminSoft.spec.ts"
 )
 
 MISSING_FILES=()
@@ -86,10 +110,10 @@ if [[ ${#MISSING_FILES[@]} -gt 0 ]]; then
     exit 1
 fi
 
-echo "✅ All 12 files generated"
+echo "✅ All 24 files generated"
 
 # 既知の問題を修正（HTMLエンティティ）
-for service in apps/api/lib/services/{foo,bar,baz}.service.ts; do
+for service in apps/api/lib/services/{fooPublic,fooPublicSoft,barProtected,barProtectedSoft,bazAdmin,bazAdminSoft}.service.ts; do
     if grep -q "&#39;" "$service" 2>/dev/null; then
         sed -i.bak "s/&#39;/'/g" "$service"
         rm -f "${service}.bak"
@@ -97,7 +121,7 @@ for service in apps/api/lib/services/{foo,bar,baz}.service.ts; do
 done
 
 # Prismaモデルの追加（存在しない場合）
-for model in Foo Bar Baz; do
+for model in FooPublic FooPublicSoft BarProtected BarProtectedSoft BazAdmin BazAdminSoft; do
     if ! grep -q "model $model" prisma/schema.prisma 2>/dev/null; then
         cat >> prisma/schema.prisma << EOF
 
@@ -122,23 +146,35 @@ yarn prisma generate > /dev/null 2>&1
 # TypeScriptチェック（生成ファイルのみ）
 echo "🔍 Running TypeScript check on generated files..."
 GENERATED_FILES=(
-    "apps/api/lib/routers/foo.router.ts"
-    "apps/api/lib/services/foo.service.ts"
-    "apps/api/lib/schemas/foo.ts"
-    "apps/api/__tests__/foo.spec.ts"
-    "apps/api/lib/routers/bar.router.ts"
-    "apps/api/lib/services/bar.service.ts"
-    "apps/api/lib/schemas/bar.ts"
-    "apps/api/__tests__/bar.spec.ts"
-    "apps/api/lib/routers/baz.router.ts"
-    "apps/api/lib/services/baz.service.ts"
-    "apps/api/lib/schemas/baz.ts"
-    "apps/api/__tests__/baz.spec.ts"
+    "apps/api/lib/routers/fooPublic.router.ts"
+    "apps/api/lib/services/fooPublic.service.ts"
+    "apps/api/lib/schemas/fooPublic.ts"
+    "apps/api/__tests__/fooPublic.spec.ts"
+    "apps/api/lib/routers/fooPublicSoft.router.ts"
+    "apps/api/lib/services/fooPublicSoft.service.ts"
+    "apps/api/lib/schemas/fooPublicSoft.ts"
+    "apps/api/__tests__/fooPublicSoft.spec.ts"
+    "apps/api/lib/routers/barProtected.router.ts"
+    "apps/api/lib/services/barProtected.service.ts"
+    "apps/api/lib/schemas/barProtected.ts"
+    "apps/api/__tests__/barProtected.spec.ts"
+    "apps/api/lib/routers/barProtectedSoft.router.ts"
+    "apps/api/lib/services/barProtectedSoft.service.ts"
+    "apps/api/lib/schemas/barProtectedSoft.ts"
+    "apps/api/__tests__/barProtectedSoft.spec.ts"
+    "apps/api/lib/routers/bazAdmin.router.ts"
+    "apps/api/lib/services/bazAdmin.service.ts"
+    "apps/api/lib/schemas/bazAdmin.ts"
+    "apps/api/__tests__/bazAdmin.spec.ts"
+    "apps/api/lib/routers/bazAdminSoft.router.ts"
+    "apps/api/lib/services/bazAdminSoft.service.ts"
+    "apps/api/lib/schemas/bazAdminSoft.ts"
+    "apps/api/__tests__/bazAdminSoft.spec.ts"
 )
 
 TSC_OUTPUT=$(yarn tsc ${GENERATED_FILES[@]} --noEmit --skipLibCheck --pretty false 2>&1 || true)
 # Filter out errors not from generated files
-FILTERED_OUTPUT=$(echo "$TSC_OUTPUT" | grep -E "(apps/api/lib|apps/api/__tests__)" | grep -E "(foo|bar|baz)" || true)
+FILTERED_OUTPUT=$(echo "$TSC_OUTPUT" | grep -E "(apps/api/lib|apps/api/__tests__)" | grep -E "(fooPublic|fooPublicSoft|barProtected|barProtectedSoft|bazAdmin|bazAdminSoft)" || true)
 TSC_ERRORS=$(echo "$FILTERED_OUTPUT" | grep -c "error TS" || true)
 if [[ $TSC_ERRORS -gt 0 ]]; then
     echo "❌ TypeScript errors in generated files: $TSC_ERRORS"
@@ -162,7 +198,7 @@ fi
 
 # Vitestチェック（生成モデルのみ）
 echo "🧪 Running tests for generated models..."
-if yarn vitest run foo bar baz --reporter=dot 2>&1 | grep -q "failed"; then
+if yarn vitest run fooPublic fooPublicSoft barProtected barProtectedSoft bazAdmin bazAdminSoft --reporter=dot 2>&1 | grep -q "failed"; then
     echo "❌ Some tests failed"
     exit 1
 else
@@ -190,7 +226,7 @@ echo "⏱  Total time: ${TOTAL_TIME}s"
 # 簡潔なサマリー
 echo ""
 echo "Summary:"
-echo "  ✅ Generated 12 files (3 models × 4 files)"
+echo "  ✅ Generated 24 files (6 models × 4 files)"
 echo "  ✅ TypeScript: 0 errors"
 echo "  ✅ ESLint: 0 errors"
 echo "  ✅ Tests: All passed"
