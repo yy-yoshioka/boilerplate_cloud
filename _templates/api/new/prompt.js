@@ -2,8 +2,11 @@ const minimist = require('minimist');
 
 module.exports = {
   prompt: ({ inquirer, args }) => {
-    // Hygenのargs.rawを使用（process.argvの直接参照を避ける）
-    const argv = minimist(args.raw || []);
+    // process.argvからhygenコマンド部分を取り除く
+    const processArgs = process.argv.slice(2);
+    const hygenIndex = processArgs.indexOf('hygen');
+    const relevantArgs = hygenIndex !== -1 ? processArgs.slice(hygenIndex + 3) : processArgs;
+    const argv = minimist(relevantArgs);
 
     // === 非対話モード ===
     if (argv.model) {
@@ -12,7 +15,11 @@ module.exports = {
       if (argv.withSoftDelete === undefined) missing.push('--withSoftDelete');
       if (!argv.access) missing.push('--access');
       if (missing.length) {
-        throw new Error(`Missing required flags in non‑interactive mode: ${missing.join(', ')}`);
+        console.error(`Missing required flags in non-interactive mode: ${missing.join(', ')}`);
+        console.error(
+          'Usage: yarn hygen api new --model ModelName --access [public|protected|admin] --withSoftDelete [true|false]',
+        );
+        process.exit(1);
       }
       // --- withSoftDelete 解析 -----------------------------
       const withSoftDelete =

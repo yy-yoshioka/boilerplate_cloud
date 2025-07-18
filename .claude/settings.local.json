@@ -32,7 +32,17 @@
       "Bash(yarn gen:api:*)",
       "Bash(grep:*)",
       "Bash(yarn lint-staged)",
-      "Bash(yarn format)"
+      "Bash(yarn format)",
+      "Bash(yarn install:*)",
+      "Bash(yarn hygen api new:*)",
+      "Bash(yarn lint:*)",
+      "Bash(yarn tsc:*)",
+      "Bash(yarn vitest run:*)",
+      "Bash(node:*)",
+      "Bash(yarn ts-node:*)",
+      "Bash(bash:*)",
+      "Bash(sed:*)",
+      "Bash(yarn eslint:*)"
     ],
     "deny": []
   }

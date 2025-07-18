@@ -23,8 +23,8 @@ describe('<%= model %> Router', () => {
         { id: '2', name: 'Test 2', createdAt: new Date(), updatedAt: new Date() }
       ];
 
-      ctx.db.<%= h.changeCase.camel(model) %>.findMany.mockResolvedValue(mockItems);
-      ctx.db.<%= h.changeCase.camel(model) %>.count.mockResolvedValue(2);
+      (ctx.db.<%= h.changeCase.camel(model) %>.findMany as any).mockResolvedValue(mockItems);
+      (ctx.db.<%= h.changeCase.camel(model) %>.count as any).mockResolvedValue(2);
 
       const result = await caller.list({});
 
@@ -34,8 +34,8 @@ describe('<%= model %> Router', () => {
     });
 
     it('should handle pagination correctly', async () => {
-      ctx.db.<%= h.changeCase.camel(model) %>.findMany.mockResolvedValue([]);
-      ctx.db.<%= h.changeCase.camel(model) %>.count.mockResolvedValue(0);
+      (ctx.db.<%= h.changeCase.camel(model) %>.findMany as any).mockResolvedValue([]);
+      (ctx.db.<%= h.changeCase.camel(model) %>.count as any).mockResolvedValue(0);
 
       const result = await caller.list({ page: 2, limit: 10 });
 
@@ -62,7 +62,7 @@ describe('<%= model %> Router', () => {
   describe('get', () => {
     it('should get <%= h.changeCase.camel(model) %> by id', async () => {
       const mockItem = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
-      ctx.db.<%= h.changeCase.camel(model) %>.findFirst.mockResolvedValue(mockItem);
+      (ctx.db.<%= h.changeCase.camel(model) %>.findFirst as any).mockResolvedValue(mockItem);
 
       const result = await caller.get({ id: '1' });
 
@@ -70,7 +70,7 @@ describe('<%= model %> Router', () => {
     });
 
     it('should throw NOT_FOUND for non-existent <%= h.changeCase.camel(model) %>', async () => {
-      ctx.db.<%= h.changeCase.camel(model) %>.findFirst.mockResolvedValue(null);
+      (ctx.db.<%= h.changeCase.camel(model) %>.findFirst as any).mockResolvedValue(null);
 
       await expect(caller.get({ id: 'non-existent' })).rejects.toThrow(TRPCError);
     });
@@ -87,7 +87,7 @@ describe('<%= model %> Router', () => {
         deletedAt: null<% } %>
       };
       
-      ctx.db.<%= h.changeCase.camel(model) %>.create.mockResolvedValue(created);
+      (ctx.db.<%= h.changeCase.camel(model) %>.create as any).mockResolvedValue(created);
 
       const result = await caller.create(input);
 
@@ -109,8 +109,8 @@ describe('<%= model %> Router', () => {
       const existing = { id: '1', name: 'Original', createdAt: new Date(), updatedAt: new Date() };
       const updated = { ...existing, name: 'Updated' };
       
-      ctx.db.<%= h.changeCase.camel(model) %>.findFirst.mockResolvedValue(existing);
-      ctx.db.<%= h.changeCase.camel(model) %>.update.mockResolvedValue(updated);
+      (ctx.db.<%= h.changeCase.camel(model) %>.findFirst as any).mockResolvedValue(existing);
+      (ctx.db.<%= h.changeCase.camel(model) %>.update as any).mockResolvedValue(updated);
 
       const result = await caller.update({ id: '1', data: { name: 'Updated' } });
 
@@ -118,7 +118,7 @@ describe('<%= model %> Router', () => {
     });
 
     it('should throw NOT_FOUND for non-existent <%= h.changeCase.camel(model) %>', async () => {
-      ctx.db.<%= h.changeCase.camel(model) %>.findFirst.mockResolvedValue(null);
+      (ctx.db.<%= h.changeCase.camel(model) %>.findFirst as any).mockResolvedValue(null);
 
       await expect(caller.update({ id: 'non-existent', data: { name: 'Updated' } }))
         .rejects.toThrow(TRPCError);
@@ -131,8 +131,8 @@ describe('<%= model %> Router', () => {
       const existing = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
       const deleted = { ...existing, deletedAt: new Date() };
       
-      ctx.db.<%= h.changeCase.camel(model) %>.findFirst.mockResolvedValue(existing);
-      ctx.db.<%= h.changeCase.camel(model) %>.update.mockResolvedValue(deleted);
+      (ctx.db.<%= h.changeCase.camel(model) %>.findFirst as any).mockResolvedValue(existing);
+      (ctx.db.<%= h.changeCase.camel(model) %>.update as any).mockResolvedValue(deleted);
 
       const result = await caller.delete({ id: '1' });
 
@@ -146,7 +146,7 @@ describe('<%= model %> Router', () => {
     it('should restore <%= h.changeCase.camel(model) %> successfully', async () => {
       const restored = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date(), deletedAt: null };
       
-      ctx.db.<%= h.changeCase.camel(model) %>.update.mockResolvedValue(restored);
+      (ctx.db.<%= h.changeCase.camel(model) %>.update as any).mockResolvedValue(restored);
 
       const result = await caller.restore({ id: '1' });
 
@@ -160,7 +160,7 @@ describe('<%= model %> Router', () => {
     it('should hard delete <%= h.changeCase.camel(model) %> successfully', async () => {
       const deleted = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
       
-      ctx.db.<%= h.changeCase.camel(model) %>.delete.mockResolvedValue(deleted);
+      (ctx.db.<%= h.changeCase.camel(model) %>.delete as any).mockResolvedValue(deleted);
 
       const result = await caller.delete({ id: '1' });
 
@@ -174,7 +174,7 @@ describe('<%= model %> Router', () => {
 
   describe('error handling', () => {
     it('should handle database errors gracefully', async () => {
-      ctx.db.<%= h.changeCase.camel(model) %>.findMany.mockRejectedValue(new Error('Database error'));
+      (ctx.db.<%= h.changeCase.camel(model) %>.findMany as any).mockRejectedValue(new Error('Database error'));
 
       await expect(caller.list({})).rejects.toThrow(TRPCError);
     });

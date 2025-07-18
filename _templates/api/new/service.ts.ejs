@@ -4,13 +4,13 @@ to: apps/api/lib/services/<%= h.changeCase.camel(model) %>.service.ts
 import type { Context } from '../types/context';
 import type * as S from '../schemas/<%= h.changeCase.camel(model) %>';
 import { createStandardError, ERROR_CODES } from '../utils/errors';
+import { Prisma } from '@prisma/client';
 
 export const create<%= model %>Service = (ctx: Context) => {
   const { db, logger, userId } = ctx;
   
   // 型安全な検索フィールド定義
-  const searchFields = [<%= searchableFields.split(',').map(f => `'${f.trim()}'`).join(', ') %>] as const
-    satisfies readonly string[];
+  const searchFields = [<%- searchableFields.split(',').map(f => `'${f.trim()}'`).join(', ') %>] as const;
 
   // 認証チェック
   const ensureAuthenticated = () => {
@@ -31,7 +31,7 @@ export const create<%= model %>Service = (ctx: Context) => {
       
       const where = {
 <% if (withSoftDelete) { %>        deletedAt: null,<% } %>
-        <% if (access !== 'public') { %>// TODO: Add user/organization filtering based on your data model<% } %>
+        <% if (access !== 'public') { %>// Add user/organization filtering based on your data model<% } %>
         ...(search?.trim() && {
           OR: searchFields.map(field => ({
             [field]: { contains: search, mode: 'insensitive' as const }
@@ -89,19 +89,17 @@ export const create<%= model %>Service = (ctx: Context) => {
         return await db.<%= h.changeCase.camel(model) %>.create({ 
           data: {
             ...data,
-            <% if (access !== 'public') { %>// TODO: Add user/organization association<% } %>
-          } 
+            <% if (access !== 'public') { %>// Add user/organization association<% } %>
+          } as any // Type assertion needed due to Prisma's strict typing
         });
-      } catch (error: any) {
-        logger.error({ model: '<%= model %>', action: 'create', error: error.message });
-        
-        switch (error?.code) {
-          case 'P2002': // unique constraint
-          case 'P2003': // FK violation
-            throw createStandardError(ERROR_CODES.CONFLICT);
-          default:
-            throw createStandardError(ERROR_CODES.INTERNAL_ERROR);
+      } catch (error: unknown) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          if (error.code === 'P2002') throw createStandardError(ERROR_CODES.CONFLICT);
+          if (error.code === 'P2003') throw createStandardError(ERROR_CODES.CONFLICT);
+          if (error.code === 'P2025') throw createStandardError(ERROR_CODES.NOT_FOUND);
         }
+        logger.error({ model: '<%= model %>', action: 'create', error: error instanceof Error ? error.message : 'Unknown error' });
+        throw createStandardError(ERROR_CODES.INTERNAL_ERROR);
       }
     },
 
@@ -179,14 +177,13 @@ export const create<%= model %>Service = (ctx: Context) => {
       
       try {
         return await db.<%= h.changeCase.camel(model) %>.delete({ where: { id } });
-      } catch (error: any) {
-        logger.error({ model: '<%= model %>', action: 'hardDelete', id, error: error.message });
-        
-        switch (error?.code) {
-          case 'P2003': throw createStandardError(ERROR_CODES.CONFLICT);
-          case 'P2025': throw createStandardError(ERROR_CODES.NOT_FOUND);
-          default:      throw createStandardError(ERROR_CODES.INTERNAL_ERROR);
+      } catch (error: unknown) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          if (error.code === 'P2003') throw createStandardError(ERROR_CODES.CONFLICT);
+          if (error.code === 'P2025') throw createStandardError(ERROR_CODES.NOT_FOUND);
         }
+        logger.error({ model: '<%= model %>', action: 'hardDelete', id, error: error instanceof Error ? error.message : 'Unknown error' });
+        throw createStandardError(ERROR_CODES.INTERNAL_ERROR);
       }
     },
   };

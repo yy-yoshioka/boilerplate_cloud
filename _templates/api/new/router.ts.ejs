@@ -82,7 +82,7 @@ export const <%= h.changeCase.camel(model) %>Router = router({
 <% } else { %>
 
   // Hard delete typically requires admin access
-  delete: <%= access === 'admin' ? 'adminProcedure' : 'adminProcedure' %>
+  delete: <%= access === 'admin' ? 'adminProcedure' : procedureName %>
     .input(S.<%= model %>DeleteInput)
     .output(S.<%= model %>DeleteOutput)
     .mutation(async ({ input, ctx }) => {

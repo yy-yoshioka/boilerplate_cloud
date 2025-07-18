@@ -27,7 +27,8 @@
     "prisma:format": "prisma format",
     "verify-scaffold": "ts-node scripts/verify-scaffold.ts",
     "gen:api": "ts-node scripts/gen-api.ts",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test:hygen": "bash scripts/hygen-smoke-test.sh"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

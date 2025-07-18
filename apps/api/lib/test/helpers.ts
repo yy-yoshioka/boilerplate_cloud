@@ -1,57 +1,43 @@
 import { vi } from 'vitest';
 import type { Context } from '../types/context';
 import type { PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
-const createMockModel = () => ({
-  findMany: vi.fn(),
-  findFirst: vi.fn(),
-  findUnique: vi.fn(),
-  findUniqueOrThrow: vi.fn(),
-  create: vi.fn(),
-  createMany: vi.fn(),
-  update: vi.fn(),
-  updateMany: vi.fn(),
-  upsert: vi.fn(),
-  delete: vi.fn(),
-  deleteMany: vi.fn(),
-  count: vi.fn(),
-  aggregate: vi.fn(),
-  groupBy: vi.fn(),
-});
+type MockDelegate<T> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => any ? ReturnType<typeof vi.fn> : never;
+};
 
-// Prismaの全モデルリスト（実際のschema.prismaに合わせて更新）
-const PRISMA_MODELS = [
-  'account',
-  'authAccount',
-  'session',
-  'organization',
-  'organizationMember',
-  'project',
-  'environment',
-  'environmentVariable',
-  'build',
-  'deployment',
-  'apiKey',
-  'secret',
-  'auditLog',
-  'subscription',
-  'invoice',
-  'tokenUsage',
-  'customization',
-  'featureFlag',
-  'template',
-  'webhookEvent',
-  'usage',
-];
+const createMockModel = <T>(): MockDelegate<T> =>
+  ({
+    findMany: vi.fn() as any,
+    findFirst: vi.fn() as any,
+    findUnique: vi.fn() as any,
+    findUniqueOrThrow: vi.fn() as any,
+    create: vi.fn() as any,
+    createMany: vi.fn() as any,
+    update: vi.fn() as any,
+    updateMany: vi.fn() as any,
+    upsert: vi.fn() as any,
+    delete: vi.fn() as any,
+    deleteMany: vi.fn() as any,
+    count: vi.fn() as any,
+    aggregate: vi.fn() as any,
+    groupBy: vi.fn() as any,
+  }) as any;
 
 export const createMockContext = (focusModel?: string): Context => {
-  // 全モデルのモックを事前生成
-  const models = PRISMA_MODELS.reduce(
+  // Prisma.dmmf からモデル一覧を動的に取得
+  const modelNames = Object.keys(Prisma.ModelName)
+    .map((key) => Prisma.ModelName[key as keyof typeof Prisma.ModelName])
+    .map((name) => name.charAt(0).toLowerCase() + name.slice(1));
+
+  // 全モデルのモックを動的生成
+  const models = modelNames.reduce(
     (acc, modelName) => {
       acc[modelName] = createMockModel();
       return acc;
     },
-    {} as Record<string, ReturnType<typeof createMockModel>>,
+    {} as Record<string, any>,
   );
 
   const mockDb = {
@@ -89,8 +75,11 @@ export const createMockContext = (focusModel?: string): Context => {
  *   const projectModel = getMockModel(ctx, 'project');
  *   projectModel.findMany.mockResolvedValue([...]);
  */
-export const getMockModel = <K extends keyof PrismaClient>(ctx: Context, modelName: K) => {
-  return (ctx.db as PrismaClient)[modelName];
+export const getMockModel = <M extends keyof PrismaClient, K extends keyof PrismaClient[M]>(
+  ctx: Context,
+  modelName: M,
+): MockDelegate<PrismaClient[M]> => {
+  return (ctx.db as any)[modelName];
 };
 
 // ------------------------- 以下はダミーデータ生成 -------------------------
