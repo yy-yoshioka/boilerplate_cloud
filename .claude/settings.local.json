@@ -42,7 +42,8 @@
       "Bash(yarn ts-node:*)",
       "Bash(bash:*)",
       "Bash(sed:*)",
-      "Bash(yarn eslint:*)"
+      "Bash(yarn eslint:*)",
+      "Bash(git merge:*)"
     ],
     "deny": []
   }
