@@ -1,6 +1,7 @@
 ---
 to: apps/api/__tests__/<%= h.changeCase.camel(model) %>.spec.ts
 ---
+// SPDX-License-Identifier: MIT
 import { describe, expect, it, beforeEach } from 'vitest';
 import { <%= h.changeCase.camel(model) %>Router } from '../lib/routers/<%= h.changeCase.camel(model) %>.router';
 import { createMockContext } from '../lib/test/helpers';
