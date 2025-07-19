@@ -20,7 +20,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'yarn'
 
       - name: Install dependencies
@@ -42,7 +42,11 @@ jobs:
         run: |
           echo "## Hygen Validation Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          cat hygen-validation-REPORT.md >> $GITHUB_STEP_SUMMARY
+          if [ -f hygen-validation-REPORT.md ]; then
+            cat hygen-validation-REPORT.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Report file not generated (smoke test may have failed)" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Check generated files
         run: |
