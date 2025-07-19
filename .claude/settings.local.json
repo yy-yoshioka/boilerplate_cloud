@@ -45,7 +45,13 @@
       "Bash(yarn eslint:*)",
       "Bash(test:*)",
       "Bash(git merge:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(yarn hygen-smoke:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(yarn workspace @boilerplate-cloud/api vitest:*)"
     ],
     "deny": []
   }
