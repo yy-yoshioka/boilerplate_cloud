@@ -50,7 +50,8 @@
       "Bash(npx prisma generate:*)",
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
-      "Bash(gh pr checks:*)"
+      "Bash(gh pr checks:*)",
+      "Bash(yarn workspace @boilerplate-cloud/api vitest:*)"
     ],
     "deny": []
   }

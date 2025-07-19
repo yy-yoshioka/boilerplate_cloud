@@ -62,7 +62,7 @@ describe('<%= model %> Router', () => {
 
   describe('get', () => {
     it('should get <%= h.changeCase.camel(model) %> by id', async () => {
-      const mockItem = { id: 'cltest12345678901234567890', name: 'Test', description: null, email: null, status: 'ACTIVE', createdAt: new Date(), updatedAt: new Date()<% if (withSoftDelete) { %>, deletedAt: null<% } %> };
+      const mockItem = { id: 'cltest12345678901234567890', name: 'Test', createdAt: new Date(), updatedAt: new Date()<% if (withSoftDelete) { %>, deletedAt: null<% } %> };
       (ctx.db.<%= h.changeCase.camel(model) %>.findFirst as any).mockResolvedValue(mockItem);
 
       const result = await caller.get({ id: 'cltest12345678901234567890' });
@@ -83,9 +83,6 @@ describe('<%= model %> Router', () => {
       const created = { 
         id: 'cltest12345678901234567890', 
         ...input,
-        description: null,
-        email: null,
-        status: 'ACTIVE',
         createdAt: new Date(), 
         updatedAt: new Date()<% if (withSoftDelete) { %>,
         deletedAt: null<% } %>
@@ -110,7 +107,7 @@ describe('<%= model %> Router', () => {
 
   describe('update', () => {
     it('should update <%= h.changeCase.camel(model) %> successfully', async () => {
-      const existing = { id: 'cltest12345678901234567890', name: 'Original', createdAt: new Date(), updatedAt: new Date() };
+      const existing = { id: 'cltest12345678901234567890', name: 'Original', createdAt: new Date(), updatedAt: new Date()<% if (withSoftDelete) { %>, deletedAt: null<% } %> };
       const updated = { ...existing, name: 'Updated' };
       
       (ctx.db.<%= h.changeCase.camel(model) %>.findFirst as any).mockResolvedValue(existing);
@@ -132,7 +129,7 @@ describe('<%= model %> Router', () => {
   describe('delete', () => {
     <% if (withSoftDelete) { %>
     it('should soft delete <%= h.changeCase.camel(model) %> successfully', async () => {
-      const existing = { id: 'cltest12345678901234567890', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
+      const existing = { id: 'cltest12345678901234567890', name: 'Test', createdAt: new Date(), updatedAt: new Date()<% if (withSoftDelete) { %>, deletedAt: null<% } %> };
       const deleted = { ...existing, deletedAt: new Date() };
       
       (ctx.db.<%= h.changeCase.camel(model) %>.findFirst as any).mockResolvedValue(existing);
