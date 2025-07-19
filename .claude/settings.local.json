@@ -47,7 +47,10 @@
       "Bash(git merge:*)",
       "Bash(git branch:*)",
       "Bash(yarn hygen-smoke:*)",
-      "Bash(npx prisma generate:*)"
+      "Bash(npx prisma generate:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh pr checks:*)"
     ],
     "deny": []
   }
