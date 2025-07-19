@@ -45,7 +45,9 @@
       "Bash(yarn eslint:*)",
       "Bash(test:*)",
       "Bash(git merge:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(yarn hygen-smoke:*)",
+      "Bash(npx prisma generate:*)"
     ],
     "deny": []
   }

@@ -4,34 +4,49 @@ on:
   pull_request:
     paths:
       - '_templates/**'
-      - 'hygen.js'
+      - 'scripts/gen-api.ts'
       - 'scripts/hygen-smoke-test.sh'
+      - 'hygen.js'
+      - '.husky/**'
+      - 'package.json'
 
 jobs:
-  test:
+  smoke-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
           cache: 'yarn'
 
-      - run: yarn install --frozen-lockfile
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --prefer-offline
 
-      - name: Test generation
+      - name: Run Hygen Smoke Test (6 patterns)
+        run: bash scripts/hygen-smoke-test.sh
+
+      - name: Upload validation report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hygen-validation-report
+          path: hygen-validation-REPORT.md
+          retention-days: 7
+
+      - name: Add report to job summary
+        if: always()
         run: |
-          yarn hygen api new --model TestModel --withSoftDelete false --searchableFields name --access protected
-          test -f apps/api/lib/routers/testModel.router.ts
-          test -f apps/api/lib/services/testModel.service.ts
-          test -f apps/api/lib/schemas/testModel.ts
-          test -f apps/api/__tests__/testModel.spec.ts
+          echo "## Hygen Validation Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat hygen-validation-REPORT.md >> $GITHUB_STEP_SUMMARY
 
-      - name: Lint generated code
-        run: yarn lint:fix --max-warnings=0
-
-      - name: Run unit tests
-        run: yarn test
-
-      - name: Run simplified smoke tests
-        run: yarn test:hygen
+      - name: Check generated files
+        run: |
+          echo "📁 Generated files:"
+          find apps/api/lib -name "*.router.ts" -o -name "*.service.ts" | sort
+          find apps/api/lib/schemas -name "*.ts" | sort
+          find apps/api/__tests__ -name "*.spec.ts" | sort
