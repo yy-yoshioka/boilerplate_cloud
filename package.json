@@ -28,7 +28,8 @@
     "verify-scaffold": "ts-node scripts/verify-scaffold.ts",
     "gen:api": "echo 'Deprecated: Use `yarn hygen api new` instead' && exit 1",
     "lint:fix": "eslint . --fix",
-    "test:hygen": "bash scripts/hygen-smoke-test.sh"
+    "test:hygen": "bash scripts/hygen-smoke-test.sh",
+    "hygen-smoke": "bash scripts/hygen-smoke-test.sh"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

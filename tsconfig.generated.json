@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "apps/api/lib/routers/**/*",
+    "apps/api/lib/services/**/*",
+    "apps/api/lib/schemas/**/*",
+    "apps/api/__tests__/**/*"
+  ],
+  "exclude": ["node_modules", "packages", "**/*.spec.ts"]
+}

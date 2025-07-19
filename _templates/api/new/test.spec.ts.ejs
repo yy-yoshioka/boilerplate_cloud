@@ -20,8 +20,8 @@ describe('<%= model %> Router', () => {
   describe('list', () => {
     it('should list <%= h.changeCase.camel(model) %>s successfully', async () => {
       const mockItems = [
-        { id: '1', name: 'Test 1', createdAt: new Date(), updatedAt: new Date() },
-        { id: '2', name: 'Test 2', createdAt: new Date(), updatedAt: new Date() }
+        { id: 'cltest12345678901234567890', name: 'Test 1', createdAt: new Date(), updatedAt: new Date()<% if (withSoftDelete) { %>, deletedAt: null<% } %> },
+        { id: 'cltest12345678901234567891', name: 'Test 2', createdAt: new Date(), updatedAt: new Date()<% if (withSoftDelete) { %>, deletedAt: null<% } %> }
       ];
 
       (ctx.db.<%= h.changeCase.camel(model) %>.findMany as any).mockResolvedValue(mockItems);
@@ -62,10 +62,10 @@ describe('<%= model %> Router', () => {
 
   describe('get', () => {
     it('should get <%= h.changeCase.camel(model) %> by id', async () => {
-      const mockItem = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
+      const mockItem = { id: 'cltest12345678901234567890', name: 'Test', createdAt: new Date(), updatedAt: new Date()<% if (withSoftDelete) { %>, deletedAt: null<% } %> };
       (ctx.db.<%= h.changeCase.camel(model) %>.findFirst as any).mockResolvedValue(mockItem);
 
-      const result = await caller.get({ id: '1' });
+      const result = await caller.get({ id: 'cltest12345678901234567890' });
 
       expect(result).toEqual(mockItem);
     });
@@ -81,8 +81,8 @@ describe('<%= model %> Router', () => {
     it('should create <%= h.changeCase.camel(model) %> successfully', async () => {
       const input = { name: 'New Test' };
       const created = { 
-        id: '1', 
-        ...input, 
+        id: 'cltest12345678901234567890', 
+        ...input,
         createdAt: new Date(), 
         updatedAt: new Date()<% if (withSoftDelete) { %>,
         deletedAt: null<% } %>
@@ -107,13 +107,13 @@ describe('<%= model %> Router', () => {
 
   describe('update', () => {
     it('should update <%= h.changeCase.camel(model) %> successfully', async () => {
-      const existing = { id: '1', name: 'Original', createdAt: new Date(), updatedAt: new Date() };
+      const existing = { id: 'cltest12345678901234567890', name: 'Original', createdAt: new Date(), updatedAt: new Date()<% if (withSoftDelete) { %>, deletedAt: null<% } %> };
       const updated = { ...existing, name: 'Updated' };
       
       (ctx.db.<%= h.changeCase.camel(model) %>.findFirst as any).mockResolvedValue(existing);
       (ctx.db.<%= h.changeCase.camel(model) %>.update as any).mockResolvedValue(updated);
 
-      const result = await caller.update({ id: '1', data: { name: 'Updated' } });
+      const result = await caller.update({ id: 'cltest12345678901234567890', data: { name: 'Updated' } });
 
       expect(result).toEqual(updated);
     });
@@ -129,45 +129,45 @@ describe('<%= model %> Router', () => {
   describe('delete', () => {
     <% if (withSoftDelete) { %>
     it('should soft delete <%= h.changeCase.camel(model) %> successfully', async () => {
-      const existing = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
+      const existing = { id: 'cltest12345678901234567890', name: 'Test', createdAt: new Date(), updatedAt: new Date()<% if (withSoftDelete) { %>, deletedAt: null<% } %> };
       const deleted = { ...existing, deletedAt: new Date() };
       
       (ctx.db.<%= h.changeCase.camel(model) %>.findFirst as any).mockResolvedValue(existing);
       (ctx.db.<%= h.changeCase.camel(model) %>.update as any).mockResolvedValue(deleted);
 
-      const result = await caller.delete({ id: '1' });
+      const result = await caller.delete({ id: 'cltest12345678901234567890' });
 
-      expect(result).toEqual({ success: true, id: '1' });
+      expect(result).toEqual({ success: true, id: 'cltest12345678901234567890' });
       expect(ctx.db.<%= h.changeCase.camel(model) %>.update).toHaveBeenCalledWith({
-        where: { id: '1' },
+        where: { id: 'cltest12345678901234567890' },
         data: { deletedAt: expect.any(Date) }
       });
     });
 
     it('should restore <%= h.changeCase.camel(model) %> successfully', async () => {
-      const restored = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date(), deletedAt: null };
+      const restored = { id: 'cltest12345678901234567890', name: 'Test', createdAt: new Date(), updatedAt: new Date(), deletedAt: null };
       
       (ctx.db.<%= h.changeCase.camel(model) %>.update as any).mockResolvedValue(restored);
 
-      const result = await caller.restore({ id: '1' });
+      const result = await caller.restore({ id: 'cltest12345678901234567890' });
 
       expect(result).toEqual(restored);
       expect(ctx.db.<%= h.changeCase.camel(model) %>.update).toHaveBeenCalledWith({
-        where: { id: '1' },
+        where: { id: 'cltest12345678901234567890' },
         data: { deletedAt: null }
       });
     });
     <% } else { %>
     it('should hard delete <%= h.changeCase.camel(model) %> successfully', async () => {
-      const deleted = { id: '1', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
+      const deleted = { id: 'cltest12345678901234567890', name: 'Test', createdAt: new Date(), updatedAt: new Date() };
       
       (ctx.db.<%= h.changeCase.camel(model) %>.delete as any).mockResolvedValue(deleted);
 
-      const result = await caller.delete({ id: '1' });
+      const result = await caller.delete({ id: 'cltest12345678901234567890' });
 
-      expect(result).toEqual({ success: true, id: '1' });
+      expect(result).toEqual({ success: true, id: 'cltest12345678901234567890' });
       expect(ctx.db.<%= h.changeCase.camel(model) %>.delete).toHaveBeenCalledWith({
-        where: { id: '1' }
+        where: { id: 'cltest12345678901234567890' }
       });
     });
     <% } %>

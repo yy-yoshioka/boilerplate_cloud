@@ -14,9 +14,6 @@ const SlugSchema = z.string().regex(/^[a-z0-9-]+$/, 'Invalid slug format');
 export const <%= model %> = z.object({
   id: IdSchema,
   name: NameSchema,
-  description: z.string().max(1000, 'Description too long').nullable().optional(),
-  email: EmailSchema.nullable().optional(),
-  status: z.string().default('ACTIVE'),
   createdAt: z.date(),
   updatedAt: z.date(),
 <% if (withSoftDelete) { %>  deletedAt: z.date().nullable(),<% } %>
