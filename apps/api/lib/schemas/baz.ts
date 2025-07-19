@@ -16,7 +16,6 @@ export const Baz = z.object({
   status: z.string().default('ACTIVE'),
   createdAt: z.date(),
   updatedAt: z.date(),
-  deletedAt: z.date().nullable(),
 });
 
 export type Baz = z.infer<typeof Baz>;
@@ -50,7 +49,6 @@ export const BazCreateInput = Baz.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-  deletedAt: true,
 }).strict(); // Prevent unknown properties
 
 export const BazUpdateInput = z.object({

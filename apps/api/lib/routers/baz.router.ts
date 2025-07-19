@@ -49,18 +49,7 @@ export const bazRouter = router({
     .output(S.BazDeleteOutput)
     .mutation(async ({ input, ctx }) => {
       const service = createBazService(ctx);
-      await service.softDelete(input.id);
+      await service.hardDelete(input.id);
       return { success: true, id: input.id };
-    }),
-
-  // Restore typically requires admin access
-  restore: adminProcedure
-    .input(S.BazDeleteInput)
-    .output(S.Baz)
-    .mutation(async ({ input, ctx }) => {
-      const service = createBazService(ctx);
-      const result = await service.restore(input.id);
-      if (!result) throw createStandardError(ERROR_CODES.NOT_FOUND);
-      return result;
     }),
 });

@@ -28,7 +28,6 @@ export const createBazService = (ctx: Context) => {
       if (limit < 1 || limit > 100) throw createStandardError(ERROR_CODES.VALIDATION_ERROR);
 
       const where = {
-        deletedAt: null,
         // Add user/organization filtering based on your data model
         ...(search?.trim() && {
           OR: searchFields.map((field) => ({
@@ -70,7 +69,7 @@ export const createBazService = (ctx: Context) => {
 
       try {
         return await db.baz.findFirst({
-          where: { id, deletedAt: null },
+          where: { id },
         });
       } catch (error: any) {
         logger.error({ model: 'Baz', action: 'get', id, error: error.message });
@@ -125,45 +124,6 @@ export const createBazService = (ctx: Context) => {
         });
       } catch (error: any) {
         logger.error({ model: 'Baz', action: 'update', id, error: error.message });
-        throw createStandardError(ERROR_CODES.INTERNAL_ERROR);
-      }
-    },
-
-    async softDelete(id: string) {
-      ensureAuthenticated();
-
-      if (!id) throw createStandardError(ERROR_CODES.VALIDATION_ERROR);
-
-      const existing = await this.get(id);
-      if (!existing) throw createStandardError(ERROR_CODES.NOT_FOUND);
-
-      logger.info({ model: 'Baz', action: 'softDelete', id, userId });
-
-      try {
-        return await db.baz.update({
-          where: { id },
-          data: { deletedAt: new Date() },
-        });
-      } catch (error: any) {
-        logger.error({ model: 'Baz', action: 'softDelete', id, error: error.message });
-        throw createStandardError(ERROR_CODES.INTERNAL_ERROR);
-      }
-    },
-
-    async restore(id: string) {
-      ensureAuthenticated();
-
-      if (!id) throw createStandardError(ERROR_CODES.VALIDATION_ERROR);
-
-      logger.info({ model: 'Baz', action: 'restore', id, userId });
-
-      try {
-        return await db.baz.update({
-          where: { id },
-          data: { deletedAt: null },
-        });
-      } catch (error: any) {
-        logger.error({ model: 'Baz', action: 'restore', id, error: error.message });
         throw createStandardError(ERROR_CODES.INTERNAL_ERROR);
       }
     },
