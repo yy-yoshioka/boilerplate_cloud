@@ -8,6 +8,8 @@ FROM base AS deps
 COPY package.json yarn.lock ./
 # Copy workspace package.json files
 COPY apps/web/package.json ./apps/web/
+# Copy prisma directory for schema file (needed for postinstall script)
+COPY prisma ./prisma/
 # Create packages directory (even if empty)
 RUN mkdir -p ./packages
 

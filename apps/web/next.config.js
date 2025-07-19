@@ -2,6 +2,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   transpilePackages: [],
+  output: 'standalone',
   images: {
     domains: ['avatars.githubusercontent.com', 'lh3.googleusercontent.com', 'images.unsplash.com'],
   },

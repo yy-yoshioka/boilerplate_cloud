@@ -101,7 +101,7 @@ enum CustomizationStatus {
 model Account {
   id             String               @id @default(cuid())
   email          String               @unique
-  name           String?
+  name           String
   avatarUrl      String?
   passwordEnc    String?
   status         AccountStatus        @default(ACTIVE)
