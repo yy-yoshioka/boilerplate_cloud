@@ -13,9 +13,9 @@
 
 | Check | Status | Time | Details |
 |-------|--------|------|---------|
-| TSC | ✅ 0 err | 2s | Generated files only |
-| ESLint | ✅ 0 err | 1s | Max warnings: 0 |
-| Vitest | ❌ Failed | 1s | 6 test suites |
+| TSC | ✅ 0 err | 1s | Generated files only |
+| ESLint | ✅ 0 err | 2s | Max warnings: 0 |
+| Vitest | ✅ 6 pass | 1s | 6 test suites |
 | **Total** | — | 11s | — |
 
 生成ファイル: Foo, Bar, Baz, Qux, Quux, Quuz (合計 24 ファイル)
